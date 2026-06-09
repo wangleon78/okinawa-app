@@ -35,7 +35,7 @@ const ITINERARY_DATA = [
       { time: '14:30 - 16:30', title: 'NEO Park (名護動植物園)', type: 'activity', icon: Activity, mapQuery: 'ネオパークオキナワ', desc: '開放式柵欄動物園。必看水豚、羊駝、天竺鼠，遊園車、紅熊貓咖啡館、喜馬拉雅小熊貓、砂貓、飛禽秀。', map: true },
       { time: '16:45 - 17:45', title: '御菓子御殿 名護店', type: 'shopping', icon: ShoppingBag, mapQuery: '御菓子御殿 名護店', desc: '【北部伴手禮採買】必買：元祖紅芋塔、紅包、紅月夜、鹽芝麻金楚糕、水果風味點心、沖繩黑糖。', map: true },
       { time: '18:00 - 20:00', title: '百年古家 大家 (Ufuya)', type: 'food', icon: Coffee, mapQuery: '百年古家 大家', desc: '【晚餐 / 已訂位】享用阿古豬。一個月前訂，涮涮鍋、特色飲品、泡芙。氣氛極佳！', map: true },
-      { time: '20:00 - 21:00', title: '南下至  SPORTS DEPO', type: 'transport', icon: Car, mapQuery: 'SPORTS DEPO 泡瀬店', desc: '【車程 60分】高速公路南下沖繩市 Depo Sports (運動用品)，九點關門爭取一下時間。' },
+      { time: '20:00 - 21:00', title: '南下至 SPORTS DEPO', type: 'transport', icon: Car, mapQuery: 'SPORTS DEPO 泡瀬店', desc: '【車程 60分】高速公路南下沖繩市 Depo Sports (運動用品)，九點關門爭取一下時間。' },
       { time: '21:00 - 21:30', title: 'Okinawa Grand Mer Resort', type: 'accommodation', icon: Bed, mapQuery: 'Okinawa Grand Mer Resort', desc: '抵達 Okinawa Grand Mer Resort 辦理 Check-in。', map: true },
       { time: '21:30 - 23:00', title: 'MaxValu 超市', type: 'shopping', icon: ShoppingBag, mapQuery: 'MaxValu 泡瀬店', desc: '車程 5-10 分鐘。晚上八點後有半價熟食，體驗日本在地人深夜超市採買，順便買隔日早餐。結束後回飯店。', map: true }
     ]
@@ -113,14 +113,6 @@ const PROCESSED_ITINERARY = ITINERARY_DATA.map(dayData => {
   return { ...dayData, events };
 });
 
-// --- 🌟 Framer Motion 全域 iOS 轉場配置 ---
-const pageTransition = {
-  initial: { opacity: 0, x: 30, scale: 0.96, filter: 'blur(10px)' },
-  animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
-  exit: { opacity: 0, x: -30, scale: 0.96, filter: 'blur(10px)' },
-  transition: { type: 'spring', damping: 26, stiffness: 220 }
-};
-
 // --- 🌟 觸覺漣漪視覺化 ---
 const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   const [ripples, setRipples] = useState([]);
@@ -175,6 +167,14 @@ const AmbientBackground = () => (
     <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply" style={{animationDuration: '12s', animationDelay: '4s'}} />
   </div>
 );
+
+// --- 🌟 Framer Motion 全域 iOS 轉場配置 ---
+const pageTransition = {
+  initial: { opacity: 0, x: 30, scale: 0.96, filter: 'blur(10px)' },
+  animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
+  exit: { opacity: 0, x: -30, scale: 0.96, filter: 'blur(10px)' },
+  transition: { type: 'spring', damping: 26, stiffness: 220 }
+};
 
 // --- 🌟 全域 App 進入點 ---
 export default function App() {
@@ -306,6 +306,7 @@ export default function App() {
         </div>
       )}
 
+      {/* 🌟 沙盒隔離滾動區：根絕全白 Bug，每個頁面都有自己獨立的捲動條 */}
       <main className="w-full max-w-md relative z-10 flex-1 flex flex-col overflow-hidden pt-safe">
         {isOffline && (
           <div className="bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center flex-shrink-0 shadow-md z-[100]">
@@ -313,7 +314,6 @@ export default function App() {
           </div>
         )}
         
-        {/* 🌟 沙盒隔離滾動區：從物理上根絕切換頁面時的 Scroll 全白 Bug */}
         <div className="relative flex-1 w-full overflow-hidden">
           <AnimatePresence mode="wait">
             {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
@@ -414,7 +414,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
               )}
-              匯率
+              汇率
               <input type="number" step="0.001" value={exchangeRate} onChange={e => {
                 setExchangeRate(Number(e.target.value) || 0);
                 setIsRateLive(false);

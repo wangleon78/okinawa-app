@@ -31,7 +31,7 @@ const ITINERARY_DATA = [
       { time: '12:00 - 13:00', title: 'KOURI SHRIMP (蝦蝦飯)', type: 'food', icon: Coffee, mapQuery: 'KOURI SHRIMP', desc: '【午餐 / 必吃】古宇利島超人氣蝦蝦飯，蒜香濃郁，搭配海景絕佳。', map: true },
       { time: '13:00 - 14:00', title: '古宇利島觀光', type: 'activity', icon: MapIcon, mapQuery: '古宇利島', desc: '開車環島看古宇利大橋。備案：心型岩若行程 delay 可選擇不看。', map: true },
       { time: '14:00 - 14:30', title: '前往名護市區', type: 'transport', icon: Car, mapQuery: 'ネオパークオキナワ', desc: '【車程 30分】告別海景，開往名護市區。' },
-      { time: '14:30 - 16:30', title: 'NEO Park (名護動植物園)', type: 'activity', icon: Activity, mapQuery: 'ネオパークオキナワ', desc: '開放式柵欄動物園。必看水豚、羊駝、天竺鼠，遊園車、紅熊貓咖啡館、喜馬拉雅小熊貓、砂貓、飛禽秀。', map: true },
+      { time: '14:30 - 16:30', title: 'NEO Park (名護動植物園)', type: 'activity', icon: Activity, mapQuery: 'ネオパークオキナワ', desc: '開放式柵欄動物園。必看水豚、羊駝、天竺鼠，遊園車、紅熊貓咖啡館、喜馬拉雅小熊貓、砂貓、飛禽秀. ', map: true },
       { time: '16:45 - 17:45', title: '御菓子御殿 名護店', type: 'shopping', icon: ShoppingBag, mapQuery: '御菓子御殿 名護店', desc: '【北部伴手禮採買】必買：元祖紅芋塔、紅包、紅月夜、鹽芝麻金楚糕、水果風味點心、沖繩黑糖。', map: true },
       { time: '18:00 - 20:00', title: '百年古家 大家 (Ufuya)', type: 'food', icon: Coffee, mapQuery: '百年古家 大家', desc: '【晚餐 / 已訂位】享用阿古豬。一個月前訂，涮涮鍋、特色飲品、泡芙。氣氛極佳！', map: true },
       { time: '20:00 - 21:00', title: '南下至 SPORTS DEPO', type: 'transport', icon: Car, mapQuery: 'SPORTS DEPO 泡瀬店', desc: '【車程 60分】高速公路南下沖繩市 Depo Sports (運動用品)，九點關門爭取一下時間。' },
@@ -51,7 +51,7 @@ const ITINERARY_DATA = [
       { time: '13:10 - 14:00', title: '萬座毛', type: 'activity', icon: MapIcon, mapQuery: '萬座毛', desc: '看斷崖絕景與拍照 (風很大)。停「遊客中心」免費。', map: true },
       { time: '14:00 - 14:50', title: '沿國道 58 號直奔美國村', type: 'transport', icon: Car, mapQuery: '北谷公園サンセットビーチ', desc: '【車程 50分】直奔美國村導航並停放在靠海邊的「北谷公園(日落海灘)免費停車場」或 Aeon 旁邊的大型公共停車場。' },
       { time: '14:50 - 16:30', title: '美國村逛街 (美式復古區)', type: 'activity', icon: Activity, mapQuery: '美浜アメリカンビレッジ', desc: '❶ American Depot：美式復古風、二手古著、潮牌 SOHO。\n❷ Depot Island：E棟「OKICHU」客製化沙灘拖鞋 ➔ A棟「貨車彩繪牆」 ➔ Distortion Seaside 4樓「天使之翼」IG打卡。', map: true, parking: { name: '北谷町營公共停車場', fee: '免費 (位位難求，需耐心尋找)' } },
-      { time: '16:30 - 18:20', title: '美國村晚餐', type: 'food', icon: Coffee, mapQuery: 'Taco Rice Cafe Kijimuna Depot Island', desc: '【晚餐】前往 Depot Island C 棟 2 樓吃「Taco Rice Cafe Kijimuna」招牌歐姆蛋塔可飯，或去「グルメ迴轉壽司市場」抽號碼牌。', map: true },
+      { time: '16:30 - 18:20', title: '美國村晚餐', type: 'food', icon: Coffee, mapQuery: 'Taco Rice Cafe Kijimuna Depot Island', desc: '【晚餐】前往 Depot Island C 棟 2 樓吃「Taco Rice Cafe Kijimuna」招姆蛋塔可飯，或去「グルメ迴轉壽司市場」抽號碼牌。', map: true },
       { time: '18:20 - 19:30', title: '日落海灘與夕陽步道', type: 'activity', icon: MapIcon, mapQuery: 'Zhyvago Coffee Works Okinawa', desc: '19:15 日落。往海邊移動，沿著北谷日落步道走到日落海灘。買「Zhyvago Coffee Works」工業風咖啡或「Blue Seal」二樓冰淇淋，坐在海堤上吹海風看夕陽。', map: true },
       { time: '22:00', title: '返回飯店', type: 'accommodation', icon: Bed, mapQuery: 'Okinawa Grand Mer Resort', desc: '返回飯店休息 (有溫泉需另收費)。' }
     ]
@@ -84,8 +84,8 @@ const ITINERARY_DATA = [
       { time: '13:20 - 14:20', title: '波上宮', type: 'activity', icon: MapIcon, mapQuery: '波上宮', desc: '建在珊瑚礁斷崖上的琉球最高神社。買「沖繩限定」小書包御守，波之上海灘拍神社。', map: true },
       { time: '14:20 - 14:50', title: '搭計程車前往 PARCO', type: 'transport', icon: Car, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '從波上宮直接搭計程車前往 PARCO CITY（車資約 1,500 - 2,000 日圓）。' },
       { time: '14:50 - 19:30', title: 'PARCO CITY 大採買', type: 'shopping', icon: ShoppingBag, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '先鎖定目標！進行免稅服飾、吉伊卡哇等大採買，並於 19:15 欣賞西海岸絕美夕陽 (可能要先預約晚上的計程車)。', map: true },
-      { time: '19:30 - 20:30', title: 'PARCO CITY 海景晚餐', type: 'food', icon: Coffee, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '在無敵海景美食街享用：敘敘苑燒肉、三浦三崎港迴轉壽司、極味屋、鳥玉、Taco。逛吉伊卡哇獅薩專賣店、Akachan Honpo、SAN-A超市、3樓namco、運動用品。', map: true },
-      { time: '22:00', title: '叫計程車返回飯店', type: 'transport', icon: Car, mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '叫一台計程車直接返回飯店，車資平攤下來非常划算。記得預約明天清晨去機場的車！' }
+      { time: '19:30 - 20:30', title: 'PARCO CITY 海景晚餐', type: 'food', icon: Coffee, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '在無敵海景美食街享用：敘敘苑燒肉、三浦三崎港迴轉壽司、極味屋、鳥玉、Taco。逛吉伊卡哇獅薩專專賣店、Akachan Honpo、SAN-A超市、3樓namco、運動用品。', map: true },
+      { time: '22:00', title: '叫計程車返回飯店', type: 'transport', icon: Car, mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '叫一台計程車直接返回飯店，車資平攤下來非常劃算。記得預約明天清晨去機場的車！' }
     ]
   },
   {
@@ -112,7 +112,7 @@ const PROCESSED_ITINERARY = ITINERARY_DATA.map(dayData => {
   return { ...dayData, events };
 });
 
-// --- 🌟 觸覺漣漪視覺化 (Haptic Ripple Component) 防閃爍優化版 ---
+// --- 🌟 觸覺漣漪視覺化 (移除個別元素的硬體加速，防止 GPU 負載過重導致閃爍) ---
 const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   const [ripples, setRipples] = useState([]);
   const wrapperRef = useRef(null);
@@ -135,7 +135,7 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
     <div 
       ref={wrapperRef} 
       onClick={handleClick} 
-      className={`relative overflow-hidden ${className} tension-morph hardware-accelerated`} 
+      className={`relative overflow-hidden ${className} tension-morph`} 
       {...props}
     >
       {children}
@@ -143,7 +143,7 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
         <span
           key={r.id}
           onAnimationEnd={() => setRipples(prev => prev.filter(item => item.id !== r.id))}
-          className="absolute rounded-full bg-white/40 pointer-events-none animate-ripple hardware-accelerated"
+          className="absolute rounded-full bg-white/40 pointer-events-none animate-ripple"
           style={{ width: r.size, height: r.size, left: r.x, top: r.y }}
         />
       ))}
@@ -151,7 +151,7 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   );
 };
 
-// --- 🌟 NavButton 移至最外層，避免重新掛載重置動畫 ---
+// --- 🌟 NavButton (優化為更完整的液態玻璃變化，帶有色散邊緣與發光) ---
 const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   const isActive = activeTab === id;
   return (
@@ -160,7 +160,9 @@ const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
       className="relative flex flex-col items-center justify-center w-full py-4 space-y-1 group cursor-pointer"
     >
       {isActive && (
-        <div className="absolute inset-0 bg-indigo-50/80 rounded-[2.5rem] bubble-element -z-10 shadow-[inset_0_4px_10px_rgba(255,255,255,1)] border border-indigo-100"></div>
+        <div className="absolute inset-0 rounded-[2.5rem] -z-10 border border-indigo-200/50 bg-gradient-to-br from-white/95 to-indigo-50/90 shadow-[inset_0_4px_8px_rgba(255,255,255,1),0_12px_24px_rgba(99,102,241,0.22)] bubble-element chromatic-edge">
+          <div className="absolute inset-0 rounded-[2.5rem] bg-indigo-500/10 blur-[4px]"></div>
+        </div>
       )}
       <div className={`transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
         <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
@@ -170,12 +172,12 @@ const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   );
 };
 
-// --- 🌟 全息環境粒子背景 (強制 GPU 渲染防卡頓) ---
+// --- 🌟 全息環境粒子背景 ---
 const AmbientBackground = () => (
-  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5] hardware-accelerated">
-    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/40 to-blue-200/40 blur-[120px] animate-pulse mix-blend-multiply hardware-accelerated" style={{animationDuration: '10s'}} />
-    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/40 to-emerald-200/30 blur-[140px] animate-pulse mix-blend-multiply hardware-accelerated" style={{animationDuration: '14s', animationDelay: '2s'}} />
-    <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply hardware-accelerated" style={{animationDuration: '12s', animationDelay: '4s'}} />
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5]">
+    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/40 to-blue-200/40 blur-[120px] animate-pulse mix-blend-multiply" style={{animationDuration: '10s'}} />
+    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/40 to-emerald-200/30 blur-[140px] animate-pulse mix-blend-multiply" style={{animationDuration: '14s', animationDelay: '2s'}} />
+    <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply" style={{animationDuration: '12s', animationDelay: '4s'}} />
   </div>
 );
 
@@ -190,12 +192,10 @@ export default function App() {
     setTimeout(() => setToastMsg({ text: '', visible: false }), 2500);
   };
 
-  // 1. API 狀態提升到 App 層，防止切換 Tab 時重新 Fetch 造成卡頓
   const [exchangeRate, setExchangeRate] = useState(0.215);
   const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
   const [isRateLive, setIsRateLive] = useState(false);
 
-  // 2. Artifact 專用的 window.storage API (包含安全防護降級)
   const [vouchers, setVouchers] = useState([
     { id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '使用者上傳', image: null }
   ]);
@@ -205,15 +205,15 @@ export default function App() {
     if (typeof window !== 'undefined' && window.storage) {
       window.storage.get('oki-vouchers-v3')
         .then(res => { if (res?.value) setVouchers(JSON.parse(res.value)); })
-        .catch(() => {}) // key 不存在時靜默失敗
+        .catch(() => {}) 
         .finally(() => setIsVouchersLoaded(true));
     } else {
-      setIsVouchersLoaded(true); // 非 Artifact 環境直接解鎖
+      setIsVouchersLoaded(true); 
     }
   }, []);
 
   useEffect(() => {
-    if (!isVouchersLoaded) return; // 讀完前不要存，避免覆蓋舊資料
+    if (!isVouchersLoaded) return; 
     if (typeof window !== 'undefined' && window.storage) {
       window.storage.set('oki-vouchers-v3', JSON.stringify(vouchers)).catch(() => {
         showToast('⚠️ 儲存空間可能已滿，請先刪除部分票券！');
@@ -221,7 +221,6 @@ export default function App() {
     }
   }, [vouchers, isVouchersLoaded]);
 
-  // 初次載入 Fetch API
   useEffect(() => {
     if (!isOffline) {
       fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current_weather=true')
@@ -255,7 +254,6 @@ export default function App() {
   }, [isOffline]);
 
   useEffect(() => {
-    // === 🌟 iOS 27 Liquid Glass 極致核心樣式 (修復圖層閃爍) ===
     if (document.getElementById('oki-global-styles')) return;
     const style = document.createElement('style');
     style.id = 'oki-global-styles';
@@ -269,12 +267,19 @@ export default function App() {
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-      /* 強制硬體加速，解決 Safari backdrop-filter 閃爍與 z-index 衝突 */
+      /* 針對滾動隱藏日期標籤時的閃爍優化：利用 Layer Promoted 固定與純屬 3D 複合 */
+      .scroll-flicker-fix {
+        will-change: transform, opacity;
+        transform: translate3d(0,0,0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+      }
+
+      /* 只在必要的捲動容器開啟硬體加速，避免過度耗用 GPU */
       .hardware-accelerated {
         transform: translateZ(0);
         backface-visibility: hidden;
         perspective: 1000px;
-        isolation: isolate;
       }
 
       .liquid-panel {
@@ -369,7 +374,6 @@ export default function App() {
         </div>
       )}
 
-      {/* 加上 id="main-scroll" 讓行程頁面可以監聽滾動以隱藏標籤 */}
       <main id="main-scroll" className="w-full max-w-md relative z-10 flex-1 overflow-y-auto scrollbar-hide pb-32 pt-safe hardware-accelerated">
         {isOffline && (
           <div className="bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center sticky top-0 z-[100] shadow-md">
@@ -377,14 +381,12 @@ export default function App() {
           </div>
         )}
 
-        {/* 使用提早 Fetch 好的狀態，切換 Tab 零延遲 */}
         {activeTab === 'dashboard' && <Dashboard exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
         {activeTab === 'itinerary' && <Itinerary showToast={showToast} />}
         {activeTab === 'vouchers' && <VoucherWallet vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
         {activeTab === 'emergency' && <EmergencyKit isOffline={isOffline} setIsOffline={setIsOffline} />}
       </main>
 
-      {/* 底部導航：絕對置中 */}
       <nav className="fixed bottom-6 left-0 right-0 mx-auto w-[92%] max-w-md z-50 nav-frosted rounded-[3rem] shadow-[0_20px_40px_rgba(31,38,135,0.15),inset_0_4px_10px_rgba(255,255,255,1)] flex justify-around items-center px-2 py-1 border border-white chromatic-edge hardware-accelerated">
         <NavButton id="dashboard" icon={Home} label="動態" activeTab={activeTab} setActiveTab={setActiveTab} />
         <NavButton id="itinerary" icon={MapIcon} label="行程" activeTab={activeTab} setActiveTab={setActiveTab} />
@@ -404,7 +406,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
 
   return (
     <div className="pb-6 relative z-10 px-5 pt-8 space-y-6">
-      <div className="flex items-end justify-between px-2 mb-2 bubble-element hardware-accelerated" style={{animationDelay: '50ms'}}>
+      <div className="flex items-end justify-between px-2 mb-2 bubble-element" style={{animationDelay: '50ms'}}>
         <div>
           <h1 className="text-4xl font-black tracking-tight text-slate-800 drop-shadow-md">OkiTrack</h1>
           <p className="text-sm font-extrabold tracking-wide text-indigo-700 mt-1">iOS 27 Liquid Glass Edition</p>
@@ -414,7 +416,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
         </div>
       </div>
 
-      <div className={`liquid-panel chromatic-edge holo-sheen p-6 text-white bubble-element relative overflow-hidden bg-gradient-to-br ${isOffline ? 'from-slate-500/80 to-slate-600/80' : weather.color} hardware-accelerated`} style={{animationDelay: '100ms'}}>
+      <div className={`liquid-panel chromatic-edge holo-sheen p-6 text-white bubble-element relative overflow-hidden bg-gradient-to-br ${isOffline ? 'from-slate-500/80 to-slate-600/80' : weather.color}`} style={{animationDelay: '100ms'}}>
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h3 className="font-black text-lg drop-shadow-lg flex items-center">
@@ -431,7 +433,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
         </div>
       </div>
 
-      <LiquidRippleNode className="liquid-panel p-6 bubble-element group hardware-accelerated" style={{animationDelay: '150ms'}}>
+      <LiquidRippleNode className="liquid-panel p-6 bubble-element group" style={{animationDelay: '150ms'}}>
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-extrabold text-slate-800 flex items-center text-lg">
             {showReturnFlight ? <PlaneTakeoff size={20} className="mr-2 text-indigo-600" /> : <PlaneLanding size={20} className="mr-2 text-indigo-600" />} 
@@ -460,7 +462,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
         </div>
       </LiquidRippleNode>
 
-      <div className="liquid-panel p-6 bubble-element hardware-accelerated" style={{animationDelay: '200ms'}}>
+      <div className="liquid-panel p-6 bubble-element" style={{animationDelay: '200ms'}}>
         <h3 className="font-extrabold text-slate-800 mb-5 flex items-center justify-between text-lg">
           <div className="flex items-center">
             <Calculator size={20} className="mr-2 text-indigo-600" /> 即時匯率換算
@@ -511,7 +513,6 @@ function CountdownBanner({ nextEvent }) {
     const timer = setInterval(() => {
       const distance = nextEvent.timeObj.getTime() - new Date().getTime();
       
-      // 加入已過期的守衛判斷，停止計時
       if (distance < 0) {
         setTimeLeft('進行中或已結束');
         clearInterval(timer);
@@ -530,7 +531,7 @@ function CountdownBanner({ nextEvent }) {
   if (!nextEvent) return null;
 
   return (
-    <div className="bg-indigo-700/95 backdrop-blur-xl text-white text-xs font-bold py-3 px-4 flex items-center justify-center shadow-lg relative z-50 hardware-accelerated">
+    <div className="bg-indigo-700/95 backdrop-blur-xl text-white text-xs font-bold py-3 px-4 flex items-center justify-center shadow-lg relative z-50">
       <Clock size={16} className="mr-2 animate-pulse text-indigo-200" />
       前往 <span className="mx-2 px-2.5 py-0.5 bg-white/20 rounded-full truncate max-w-[120px] shadow-inner font-extrabold">{nextEvent.title}</span> 剩餘：<span className="ml-1 text-amber-300 font-black">{timeLeft}</span>
     </div>
@@ -538,7 +539,7 @@ function CountdownBanner({ nextEvent }) {
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary) - 智慧折疊標籤
+// 2. 行程嚮導與地圖 (Itinerary) - 智慧折疊標籤與液態玻璃標籤優化
 // ==========================================
 function Itinerary({ showToast }) {
   const [activeDay, setActiveDay] = useState(1);
@@ -563,7 +564,6 @@ function Itinerary({ showToast }) {
     }
   }, []);
 
-  // 監聽外部捲軸，控制 Day 標籤收合
   useEffect(() => {
     const mainScroll = document.getElementById('main-scroll');
     if (!mainScroll) return;
@@ -581,10 +581,11 @@ function Itinerary({ showToast }) {
 
   return (
     <div className="relative">
-      <div className="sticky top-0 w-full z-40 gradient-frosted shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60 hardware-accelerated">
+      {/* 漸層凝霜模糊，加上 scroll-flicker-fix 以強制 GPU 預先渲染防止任何微小的抖動 */}
+      <div className="sticky top-0 w-full z-40 gradient-frosted shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60 hardware-accelerated scroll-flicker-fix">
         <CountdownBanner nextEvent={nextUpcomingEvent} />
 
-        <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom hardware-accelerated">
+        <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom">
           <iframe
             title="Google Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
@@ -593,35 +594,44 @@ function Itinerary({ showToast }) {
           <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,1)] pointer-events-none"></div>
         </div>
 
-        {/* 智慧收合區域：CSS Grid 0fr 技巧帶來極致滑順的折疊動畫 */}
-        <div className={`grid transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isScrolled ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
-          <div className="overflow-hidden">
-            <div className="px-4 py-3 pb-4 flex space-x-3 overflow-x-auto scrollbar-hide">
-              {PROCESSED_ITINERARY.map((data) => {
-                const isActive = activeDay === data.day;
-                return (
-                  <LiquidRippleNode
-                    key={data.day} 
-                    onClick={() => { 
-                      setActiveDay(data.day); 
-                      setActiveEventIndex(0); 
-                      document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); 
-                    }}
-                    className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white
-                      ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
-                  >
-                    <span className={`text-[11px] font-black uppercase mb-0.5 tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>Day {data.day}</span>
-                    <span className={`text-sm font-black ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>{data.date}</span>
-                  </LiquidRippleNode>
-                )
-              })}
-            </div>
+        {/* 智慧收折區域：採用 max-height 搭配 Y 軸偏移植，徹底杜絕 Reflow 圖層閃爍，同時維持滑順動畫 */}
+        <div 
+          className="transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden scroll-flicker-fix"
+          style={{
+            maxHeight: isScrolled ? '0px' : '100px',
+            opacity: isScrolled ? 0 : 1,
+            transform: isScrolled ? 'translate3d(0, -15px, 0)' : 'translate3d(0, 0, 0)',
+            pointerEvents: isScrolled ? 'none' : 'auto'
+          }}
+        >
+          <div className="px-4 py-3 pb-4 flex space-x-3 overflow-x-auto scrollbar-hide">
+            {PROCESSED_ITINERARY.map((data) => {
+              const isActive = activeDay === data.day;
+              return (
+                <LiquidRippleNode
+                  key={data.day} 
+                  onClick={() => { 
+                    setActiveDay(data.day); 
+                    setActiveEventIndex(0); 
+                    document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); 
+                  }}
+                  className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border relative overflow-hidden tension-morph
+                    ${isActive 
+                      ? 'bg-gradient-to-br from-white/95 to-indigo-50/95 border-indigo-300 text-indigo-900 scale-105 shadow-[inset_0_4px_12px_rgba(255,255,255,1),0_12px_24px_rgba(99,102,241,0.25)]' 
+                      : 'bg-white/70 text-slate-600 border-white/60 shadow-[inset_0_4px_8px_rgba(255,255,255,1),0_4px_12px_rgba(0,0,0,0.03)] hover:bg-white/90'
+                    }`}
+                >
+                  <span className={`text-[11px] font-black uppercase mb-0.5 tracking-widest transition-colors duration-300 ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>Day {data.day}</span>
+                  <span className={`text-sm font-black transition-colors duration-300 ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>{data.date}</span>
+                </LiquidRippleNode>
+              )
+            })}
           </div>
         </div>
       </div>
 
       <div className="p-5 space-y-5 pb-10 relative z-10">
-        <div className="mb-2 px-2 bubble-element hardware-accelerated">
+        <div className="mb-2 px-2 bubble-element">
            <h2 className="text-xl font-black text-slate-800 flex items-center drop-shadow-sm">
              <MapPin size={22} className="mr-2 text-rose-500 drop-shadow-md" /> {dayData.region}
            </h2>
@@ -638,20 +648,26 @@ function Itinerary({ showToast }) {
           return (
             <LiquidRippleNode 
               key={idx} onClick={() => setActiveEventIndex(idx)}
-              className={`liquid-panel p-5 cursor-pointer bubble-element hardware-accelerated
-                ${isActive ? 'subsurface-glow scale-[1.02] ring-2 ring-indigo-300 z-20' : 'opacity-90 scale-[0.98] z-10 bg-white/70'}`}
+              className={`liquid-panel p-5 cursor-pointer bubble-element border transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] relative overflow-hidden
+                ${isActive 
+                  ? 'bg-gradient-to-br from-white/95 to-indigo-50/95 border-indigo-300 scale-[1.02] shadow-[inset_0_4px_16px_rgba(255,255,255,1),0_20px_40px_rgba(99,102,241,0.18)] z-20' 
+                  : 'bg-white/75 text-slate-600 border-white/60 scale-[0.98] shadow-[inset_0_4px_8px_rgba(255,255,255,1),0_8px_20px_rgba(0,0,0,0.03)] opacity-90 z-10 hover:opacity-100 hover:scale-[0.99]'
+                }`}
               style={{ animationDelay: `${idx * 40}ms` }}
             >
               <div className="flex items-start">
-                <div className={`p-3.5 rounded-[1.5rem] mr-4 shadow-[inset_0_4px_8px_rgba(255,255,255,0.8)] border flex-shrink-0 transition-colors duration-500 tension-morph
-                  ${isActive ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-[0_8px_16px_rgba(99,102,241,0.3)]' : 'bg-white/90 text-slate-500 border-white'}`}>
+                <div className={`p-3.5 rounded-[1.5rem] mr-4 shadow-inner border flex-shrink-0 transition-all duration-500 tension-morph
+                  ${isActive 
+                    ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-[0_8px_16px_rgba(99,102,241,0.35)]' 
+                    : 'bg-white/90 text-slate-500 border-white'
+                  }`}>
                   <evt.icon size={22} />
                 </div>
                 <div className="flex-1 mt-1">
                   <div className={`text-xs font-extrabold tracking-wider mb-1 transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>{evt.time}</div>
                   <h3 className={`font-black leading-snug transition-colors text-base ${isActive ? 'text-slate-800' : 'text-slate-700'}`}>{evt.title}</h3>
                 </div>
-                <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-500 mt-2 ${isActive ? 'bg-indigo-100 shadow-inner' : ''}`}>
+                <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-500 mt-2 ${isActive ? 'bg-indigo-100/80 shadow-inner' : ''}`}>
                   <ChevronDown size={20} className={`text-slate-400 transition-transform duration-500 ${isActive ? 'rotate-180 text-indigo-700' : ''}`} />
                 </div>
               </div>
@@ -696,14 +712,13 @@ function Itinerary({ showToast }) {
 }
 
 // ==========================================
-// 3. 憑證票夾 (Voucher Wallet) - 含 Canvas 圖片壓縮
+// 3. 憑證票夾 (Voucher Wallet)
 // ==========================================
 function VoucherWallet({ vouchers, setVouchers, showToast }) {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState({ id: null, title: '', note: '', image: null });
 
-  // Canvas 圖片壓縮邏輯 (加入縮放尺寸守衛 Math.min 防放大)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -718,9 +733,7 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
         canvas.height = Math.round(img.height * scale);
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // 壓縮成 JPG 品質 0.7
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        // functional update 防閉包陷阱
         setForm(prev => ({...prev, image: dataUrl}));
       };
       img.src = event.target.result;
@@ -745,7 +758,7 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
   return (
     <div className="p-5 pt-8 space-y-6 relative z-10">
       {isFormOpen ? (
-        <div className="liquid-panel p-6 bubble-element border-indigo-200 hardware-accelerated">
+        <div className="liquid-panel p-6 bubble-element border-indigo-200">
           <h3 className="font-black text-slate-800 mb-5 flex items-center justify-between">
             <span className="flex items-center text-lg"><Plus size={20} className="mr-2 text-indigo-600" /> 新增憑證</span>
             <button type="button" onClick={() => setIsFormOpen(false)} className="text-xs bg-white/90 shadow-sm text-slate-600 font-bold px-4 py-2 rounded-xl active:scale-95 transition-all tension-morph">取消</button>
@@ -761,7 +774,7 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
           </div>
         </div>
       ) : (
-        <LiquidRippleNode onClick={() => setIsFormOpen(true)} className="w-full liquid-panel p-6 flex flex-col items-center justify-center gap-3 hover:subsurface-glow group bubble-element hardware-accelerated">
+        <LiquidRippleNode onClick={() => setIsFormOpen(true)} className="w-full liquid-panel p-6 flex flex-col items-center justify-center gap-3 hover:subsurface-glow group bubble-element">
           <div className="bg-white/90 text-indigo-600 p-4 rounded-full group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-500 shadow-[inset_0_4px_10px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)]"><Upload size={28} /></div>
           <span className="text-sm font-black text-slate-800">新增電子憑證 (支援離線)</span>
         </LiquidRippleNode>
@@ -771,14 +784,14 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
         <h3 className="font-black text-slate-800 mb-4 px-2 drop-shadow-sm text-lg">離線票夾</h3>
         <div className="space-y-4">
           {vouchers.length === 0 ? (
-            <div className="liquid-panel p-8 flex flex-col items-center text-center gap-3 bubble-element hardware-accelerated">
+            <div className="liquid-panel p-8 flex flex-col items-center text-center gap-3 bubble-element">
               <Ticket size={36} className="text-slate-300" />
               <p className="font-black text-slate-500 text-sm">票夾目前是空的</p>
               <p className="text-xs text-slate-400">點擊上方按鈕新增旅行電子憑證</p>
             </div>
           ) : (
             vouchers.map((v, idx) => (
-              <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group hardware-accelerated" style={{ animationDelay: `${idx * 50}ms` }}>
+              <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group" style={{ animationDelay: `${idx * 50}ms` }}>
                 <div className="w-4 h-[90%] absolute left-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.5)]"></div>
                 <div className="p-4 pl-8 flex-1">
                   <div className="flex justify-between items-start mb-1">
@@ -796,10 +809,9 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
         </div>
       </div>
 
-      {/* 憑證檢視 Modal */}
       {selectedVoucher && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="bg-white/90 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80 animate-in zoom-in-95 cubic-bezier(0.34, 1.56, 0.64, 1) hardware-accelerated">
+          <div className="bg-white/90 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80 animate-in zoom-in-95 cubic-bezier(0.34, 1.56, 0.64, 1)">
             <div className="p-5 flex justify-between items-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 shadow-sm z-10 chromatic-edge">
               <h3 className="font-black text-lg">憑證檢視</h3>
               <button onClick={() => setSelectedVoucher(null)} className="p-2 bg-white/20 rounded-full active:scale-90 transition-transform tension-morph"><X size={20}/></button>
@@ -835,7 +847,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
   return (
     <div className="p-5 pt-8 space-y-6 relative z-10">
       
-      <div className="liquid-panel p-6 flex items-center justify-between bubble-element hardware-accelerated" style={{animationDelay: '0ms'}}>
+      <div className="liquid-panel p-6 flex items-center justify-between bubble-element" style={{animationDelay: '0ms'}}>
         <div>
           <h3 className="font-black text-slate-800 flex items-center text-lg"><Wifi size={20} className="mr-2 text-indigo-600" /> PWA 離線測試</h3>
           <p className="text-xs text-slate-500 font-bold mt-1">模擬玉泉洞無訊號狀態</p>
@@ -845,7 +857,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
         </button>
       </div>
 
-      <div className="liquid-panel p-6 !bg-rose-50/80 !border-rose-200/80 relative overflow-hidden bubble-element chromatic-edge hardware-accelerated" style={{animationDelay: '50ms'}}>
+      <div className="liquid-panel p-6 !bg-rose-50/80 !border-rose-200/80 relative overflow-hidden bubble-element chromatic-edge" style={{animationDelay: '50ms'}}>
         <div className="absolute top-[-10%] right-[-10%] p-4 opacity-10 pointer-events-none"><ShieldAlert size={140} className="text-rose-600" /></div>
         <h2 className="text-xl font-black text-rose-800 mb-5 relative z-10 drop-shadow-sm">海外急難救助</h2>
         <div className="space-y-4 relative z-10">
@@ -855,12 +867,12 @@ function EmergencyKit({ isOffline, setIsOffline }) {
           </LiquidRippleNode>
           <LiquidRippleNode onClick={() => window.location.href="tel:0570-077-202"} className="w-full bg-white/95 p-5 rounded-[2rem] flex items-center justify-between hover:shadow-lg border border-rose-100 shadow-[inset_0_4px_8px_rgba(255,255,255,1),0_4px_10px_rgba(225,29,72,0.08)] group">
             <div><h4 className="font-black text-slate-800 text-sm">外國人醫療支援專線</h4><p className="text-[11px] font-bold text-slate-500 mt-0.5">突發疾病 (有中文)</p></div>
-            <div className="bg-rose-100 text-rose-600 p-3.5 rounded-full group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)]"><PhoneCall size={18} /></div>
+            <div className="bg-rose-100 text-rose-500 p-3.5 rounded-full group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)]"><PhoneCall size={18} /></div>
           </LiquidRippleNode>
         </div>
       </div>
 
-      <div className="liquid-panel p-6 bubble-element hardware-accelerated" style={{animationDelay: '100ms'}}>
+      <div className="liquid-panel p-6 bubble-element" style={{animationDelay: '100ms'}}>
         <h2 className="text-lg font-black text-slate-800 mb-4 drop-shadow-sm">保單與卡片</h2>
         <div className="space-y-4">
           <div className="w-full bg-white/80 p-5 rounded-[2rem] flex justify-between items-center border border-white shadow-[inset_0_4px_8px_rgba(255,255,255,1)]">

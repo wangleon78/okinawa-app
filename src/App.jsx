@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { 
   Home, Map as MapIcon, Ticket, ShieldAlert,
   Plus, Plane, Car, Coffee, ShoppingBag, Bed, Activity,
@@ -110,7 +110,7 @@ const PROCESSED_ITINERARY = ITINERARY_DATA.map(dayData => {
   return { ...dayData, events };
 });
 
-// --- 🌟 觸覺漣漪視覺化 (Haptic Ripple Component) ---
+// --- 🌟 觸覺漣漪視覺化 (Haptic Ripple Component) 防閃爍優化版 ---
 const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   const [ripples, setRipples] = useState([]);
   const wrapperRef = useRef(null);
@@ -128,23 +128,19 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
     if (onClick) onClick(e);
   };
 
-  const handleAnimationEnd = (id) => {
-    setRipples((prev) => prev.filter((r) => r.id !== id));
-  };
-
   return (
     <div 
       ref={wrapperRef} 
       onClick={handleClick} 
-      className={`relative overflow-hidden ${className} tension-morph`} 
+      className={`relative overflow-hidden ${className} tension-morph hardware-accelerated`} 
       {...props}
     >
       {children}
       {ripples.map((r) => (
         <span
           key={r.id}
-          onAnimationEnd={() => handleAnimationEnd(r.id)}
-          className="absolute rounded-full bg-white/40 mix-blend-overlay pointer-events-none animate-ripple"
+          onAnimationEnd={() => setRipples(prev => prev.filter(item => item.id !== r.id))}
+          className="absolute rounded-full bg-white/40 pointer-events-none animate-ripple hardware-accelerated"
           style={{ width: r.size, height: r.size, left: r.x, top: r.y }}
         />
       ))}
@@ -152,12 +148,12 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   );
 };
 
-// --- 🌟 全息環境粒子背景 (調降透明度以凸顯前景字體) ---
+// --- 🌟 全息環境粒子背景 (強制 GPU 渲染防卡頓) ---
 const AmbientBackground = () => (
-  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5]">
-    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/40 to-blue-200/40 blur-[120px] animate-pulse mix-blend-multiply" style={{animationDuration: '10s'}} />
-    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/40 to-emerald-200/30 blur-[140px] animate-pulse mix-blend-multiply" style={{animationDuration: '14s', animationDelay: '2s'}} />
-    <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply" style={{animationDuration: '12s', animationDelay: '4s'}} />
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5] hardware-accelerated">
+    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/40 to-blue-200/40 blur-[120px] animate-pulse mix-blend-multiply hardware-accelerated" style={{animationDuration: '10s'}} />
+    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/40 to-emerald-200/30 blur-[140px] animate-pulse mix-blend-multiply hardware-accelerated" style={{animationDuration: '14s', animationDelay: '2s'}} />
+    <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply hardware-accelerated" style={{animationDuration: '12s', animationDelay: '4s'}} />
   </div>
 );
 
@@ -167,17 +163,61 @@ export default function App() {
   const [isOffline, setIsOffline] = useState(false); 
   const [toastMsg, setToastMsg] = useState({ text: '', visible: false });
 
+  // 1. API 狀態提升到 App 層，防止切換 Tab 時重新 Fetch 造成卡頓
+  const [exchangeRate, setExchangeRate] = useState(0.215);
+  const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
+  const [isRateLive, setIsRateLive] = useState(false);
+
+  // 2. LocalStorage 讀取憑證 (加入防呆機制)
+  const [vouchers, setVouchers] = useState(() => {
+    try {
+      const saved = localStorage.getItem('oki-vouchers-v2');
+      return saved ? JSON.parse(saved) : [{ id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '使用者上傳', image: null }];
+    } catch (e) {
+      return [];
+    }
+  });
+
+  // 監聽憑證改變並存入 LocalStorage
+  useEffect(() => {
+    localStorage.setItem('oki-vouchers-v2', JSON.stringify(vouchers));
+  }, [vouchers]);
+
+  // 初次載入 Fetch API
+  useEffect(() => {
+    if (!isOffline) {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current_weather=true')
+        .then(res => res.json())
+        .then(data => {
+          if (data?.current_weather) {
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+            let desc = '晴朗'; let color = 'from-sky-500/80 to-blue-600/80';
+            if (code >= 1 && code <= 3) { desc = '多雲'; color = 'from-indigo-500/80 to-indigo-700/80'; }
+            if (code >= 51 && code <= 67) { desc = '雨天'; color = 'from-slate-600/80 to-slate-800/80'; }
+            if (code >= 71 && code <= 99) { desc = '雷陣雨'; color = 'from-slate-700/80 to-slate-900/80'; }
+            setWeather({ temp: `${temp}°`, desc, color });
+          }
+        }).catch(() => setWeather({ temp: '--', desc: '無法取得', color: 'from-slate-500/80 to-slate-600/80' }));
+        
+      fetch('https://open.er-api.com/v6/latest/JPY')
+        .then(res => res.json())
+        .then(data => {
+          if (data?.rates?.TWD) {
+            setExchangeRate(Number(data.rates.TWD.toFixed(4)));
+            setIsRateLive(true);
+          }
+        }).catch(() => setIsRateLive(false));
+    }
+  }, [isOffline]);
+
   const showToast = (msg) => {
     setToastMsg({ text: msg, visible: true });
     setTimeout(() => setToastMsg({ text: '', visible: false }), 2500);
   };
 
-  const [exchangeRate, setExchangeRate] = useState(0.215);
-  const [vouchers, setVouchers] = useState([
-    { id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '使用者上傳' }
-  ]);
-
   useEffect(() => {
+    // === 🌟 iOS 27 Liquid Glass 極致核心樣式 (修復圖層閃爍) ===
     const style = document.createElement('style');
     style.innerHTML = `
       html, body { 
@@ -189,7 +229,14 @@ export default function App() {
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-      /* 加厚液態玻璃基底，提升文字對比 */
+      /* 強制硬體加速，解決 Safari backdrop-filter 閃爍與 z-index 衝突 */
+      .hardware-accelerated {
+        transform: translateZ(0);
+        backface-visibility: hidden;
+        perspective: 1000px;
+        isolation: isolate;
+      }
+
       .liquid-panel {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%);
         backdrop-filter: blur(28px) saturate(200%);
@@ -239,12 +286,15 @@ export default function App() {
       }
       @keyframes holoReflect { 0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); } 100% { transform: translateX(50%) translateY(50%) rotate(360deg); } }
 
+      /* 移除了可能導致卡頓的動態 filter: blur，改用單純透明度與位移 */
       @keyframes bubbleEnter {
-        0% { opacity: 0; filter: blur(10px); transform: scale(0.8) translateY(20px); }
-        60% { transform: scale(1.02) translateY(-2px); filter: blur(0px); }
-        100% { opacity: 1; filter: blur(0px); transform: scale(1) translateY(0); }
+        0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+        100% { opacity: 1; transform: scale(1) translateY(0); }
       }
-      .bubble-element { animation: bubbleEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+      .bubble-element { 
+        animation: bubbleEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        will-change: transform, opacity;
+      }
 
       .gradient-frosted {
         background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.6));
@@ -284,7 +334,6 @@ export default function App() {
         <div className={`transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
           <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
         </div>
-        {/* 加深並微調放大導航列文字 */}
         <span className={`text-[11px] font-extrabold transition-all duration-300 ${isActive ? 'opacity-100 text-indigo-700' : 'opacity-80 text-slate-500'}`}>{label}</span>
       </LiquidRippleNode>
     );
@@ -294,26 +343,28 @@ export default function App() {
     <div className="fixed inset-0 text-slate-800 font-sans selection:bg-indigo-100 overflow-hidden flex flex-col items-center">
       <AmbientBackground />
       {toastMsg.visible && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center bubble-element text-indigo-900 border-white shadow-xl">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center bubble-element text-indigo-900 border-white shadow-xl hardware-accelerated">
           <CheckCircle size={18} className="mr-2 text-emerald-500" /> {toastMsg.text}
         </div>
       )}
 
-      <main key={activeTab} className="w-full max-w-md relative z-10 flex-1 overflow-y-auto scrollbar-hide pb-32 pt-safe bubble-element">
+      {/* 加上 id="main-scroll" 讓行程頁面可以監聽滾動以隱藏標籤 */}
+      <main id="main-scroll" className="w-full max-w-md relative z-10 flex-1 overflow-y-auto scrollbar-hide pb-32 pt-safe hardware-accelerated">
         {isOffline && (
           <div className="bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center sticky top-0 z-[100] shadow-md">
             <WifiOff size={14} className="mr-2 animate-pulse" /> 離線就緒模式 (本地快取運作中)
           </div>
         )}
 
-        {activeTab === 'dashboard' && <Dashboard exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isOffline={isOffline} />}
+        {/* 使用提早 Fetch 好的狀態，切換 Tab 零延遲 */}
+        {activeTab === 'dashboard' && <Dashboard exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
         {activeTab === 'itinerary' && <Itinerary showToast={showToast} />}
         {activeTab === 'vouchers' && <VoucherWallet vouchers={vouchers} setVouchers={setVouchers} />}
         {activeTab === 'emergency' && <EmergencyKit isOffline={isOffline} setIsOffline={setIsOffline} />}
       </main>
 
       {/* 底部導航：改用絕對置中 (left-0 right-0 mx-auto)，避免 transform 造成的偏移 */}
-      <nav className="fixed bottom-6 left-0 right-0 mx-auto w-[92%] max-w-md z-50 nav-frosted rounded-[3rem] shadow-[0_20px_40px_rgba(31,38,135,0.15),inset_0_4px_10px_rgba(255,255,255,1)] flex justify-around items-center px-2 py-1 border border-white chromatic-edge">
+      <nav className="fixed bottom-6 left-0 right-0 mx-auto w-[92%] max-w-md z-50 nav-frosted rounded-[3rem] shadow-[0_20px_40px_rgba(31,38,135,0.15),inset_0_4px_10px_rgba(255,255,255,1)] flex justify-around items-center px-2 py-1 border border-white chromatic-edge hardware-accelerated">
         <NavButton id="dashboard" icon={Home} label="動態" />
         <NavButton id="itinerary" icon={MapIcon} label="行程" />
         <NavButton id="vouchers" icon={Ticket} label="票夾" />
@@ -324,46 +375,15 @@ export default function App() {
 }
 
 // ==========================================
-// 1. 動態總覽 (Dashboard)
+// 1. 動態總覽 (Dashboard) 狀態已提升，速度極快
 // ==========================================
-function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
+function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, weather, isOffline }) {
   const [jpyInput, setJpyInput] = useState('');
   const [showReturnFlight, setShowReturnFlight] = useState(false);
-  const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
-  const [isRateLive, setIsRateLive] = useState(false);
-
-  useEffect(() => {
-    if (!isOffline) {
-      fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current_weather=true')
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.current_weather) {
-            const temp = Math.round(data.current_weather.temperature);
-            const code = data.current_weather.weathercode;
-            let desc = '晴朗'; let color = 'from-sky-500/80 to-blue-600/80';
-            if (code >= 1 && code <= 3) { desc = '多雲'; color = 'from-indigo-500/80 to-indigo-700/80'; }
-            if (code >= 51 && code <= 67) { desc = '雨天'; color = 'from-slate-600/80 to-slate-800/80'; }
-            if (code >= 71 && code <= 99) { desc = '雷陣雨'; color = 'from-slate-700/80 to-slate-900/80'; }
-            setWeather({ temp: `${temp}°`, desc, color });
-          }
-        }).catch(() => setWeather({ temp: '--', desc: '無法取得', color: 'from-slate-500/80 to-slate-600/80' }));
-        
-      fetch('https://open.er-api.com/v6/latest/JPY')
-        .then(res => res.json())
-        .then(data => {
-          if (data && data.rates && data.rates.TWD) {
-            setExchangeRate(Number(data.rates.TWD.toFixed(4)));
-            setIsRateLive(true);
-          }
-        }).catch(() => setIsRateLive(false));
-    }
-  }, [isOffline, setExchangeRate]);
 
   return (
     <div className="pb-6 relative z-10 px-5 pt-8 space-y-6">
-      
-      {/* 標題區 */}
-      <div className="flex items-end justify-between px-2 mb-2 bubble-element" style={{animationDelay: '50ms'}}>
+      <div className="flex items-end justify-between px-2 mb-2 bubble-element hardware-accelerated" style={{animationDelay: '50ms'}}>
         <div>
           <h1 className="text-4xl font-black tracking-tight text-slate-800 drop-shadow-md">OkiTrack</h1>
           <p className="text-sm font-extrabold tracking-wide text-indigo-700 mt-1">iOS 27 Liquid Glass Edition</p>
@@ -373,8 +393,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
         </div>
       </div>
 
-      {/* 天氣卡片 - 加強文字陰影確保清晰 */}
-      <div className={`liquid-panel chromatic-edge holo-sheen p-6 text-white bubble-element relative overflow-hidden bg-gradient-to-br ${isOffline ? 'from-slate-500/80 to-slate-600/80' : weather.color}`} style={{animationDelay: '100ms'}}>
+      <div className={`liquid-panel chromatic-edge holo-sheen p-6 text-white bubble-element relative overflow-hidden bg-gradient-to-br ${isOffline ? 'from-slate-500/80 to-slate-600/80' : weather.color} hardware-accelerated`} style={{animationDelay: '100ms'}}>
         <div className="flex items-center justify-between relative z-10">
           <div>
             <h3 className="font-black text-lg drop-shadow-lg flex items-center">
@@ -391,7 +410,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
         </div>
       </div>
 
-      <LiquidRippleNode className="liquid-panel p-6 bubble-element group" style={{animationDelay: '150ms'}}>
+      <LiquidRippleNode className="liquid-panel p-6 bubble-element group hardware-accelerated" style={{animationDelay: '150ms'}}>
         <div className="flex items-center justify-between mb-5">
           <h3 className="font-extrabold text-slate-800 flex items-center text-lg">
             {showReturnFlight ? <PlaneTakeoff size={20} className="mr-2 text-indigo-600" /> : <PlaneLanding size={20} className="mr-2 text-indigo-600" />} 
@@ -420,7 +439,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
         </div>
       </LiquidRippleNode>
 
-      <div className="liquid-panel p-6 bubble-element" style={{animationDelay: '200ms'}}>
+      <div className="liquid-panel p-6 bubble-element hardware-accelerated" style={{animationDelay: '200ms'}}>
         <h3 className="font-extrabold text-slate-800 mb-5 flex items-center justify-between text-lg">
           <div className="flex items-center">
             <Calculator size={20} className="mr-2 text-indigo-600" /> 即時匯率換算
@@ -456,7 +475,6 @@ function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
           </div>
         </div>
       </div>
-
     </div>
   );
 }
@@ -478,11 +496,7 @@ function CountdownBanner({ nextEvent }) {
         const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((distance % (1000 * 60)) / 1000);
-        let timeStr = '';
-        if (d > 0) timeStr += `${d}天 `;
-        if (h > 0 || d > 0) timeStr += `${h}時 `;
-        timeStr += `${m}分 ${s}秒`;
-        setTimeLeft(timeStr);
+        setTimeLeft(`${d > 0 ? d+'天 ' : ''}${h > 0 || d > 0 ? h+'時 ' : ''}${m}分 ${s}秒`);
       }
     }, 1000);
     return () => clearInterval(timer);
@@ -491,7 +505,7 @@ function CountdownBanner({ nextEvent }) {
   if (!nextEvent) return null;
 
   return (
-    <div className="bg-indigo-700/95 backdrop-blur-xl text-white text-xs font-bold py-3 px-4 flex items-center justify-center shadow-lg relative z-50">
+    <div className="bg-indigo-700/95 backdrop-blur-xl text-white text-xs font-bold py-3 px-4 flex items-center justify-center shadow-lg relative z-50 hardware-accelerated">
       <Clock size={16} className="mr-2 animate-pulse text-indigo-200" />
       前往 <span className="mx-2 px-2.5 py-0.5 bg-white/20 rounded-full truncate max-w-[120px] shadow-inner font-extrabold">{nextEvent.title}</span> 剩餘：<span className="ml-1 text-amber-300 font-black">{timeLeft}</span>
     </div>
@@ -499,12 +513,13 @@ function CountdownBanner({ nextEvent }) {
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary) 
+// 2. 行程嚮導與地圖 (Itinerary) - 加入滾動隱藏標籤
 // ==========================================
 function Itinerary() {
   const [activeDay, setActiveDay] = useState(1);
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -523,6 +538,17 @@ function Itinerary() {
     }
   }, []);
 
+  // 監聽外部捲軸，控制 Day 標籤收合
+  useEffect(() => {
+    const mainScroll = document.getElementById('main-scroll');
+    if (!mainScroll) return;
+    const handleScroll = () => {
+      setIsScrolled(mainScroll.scrollTop > 60);
+    };
+    mainScroll.addEventListener('scroll', handleScroll, { passive: true });
+    return () => mainScroll.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const rawDayIndex = PROCESSED_ITINERARY.findIndex(d => d.day === activeDay);
   const safeDayIndex = Math.max(0, rawDayIndex);
   const events = PROCESSED_ITINERARY[safeDayIndex]?.events || [];
@@ -531,10 +557,10 @@ function Itinerary() {
 
   return (
     <div className="relative">
-      <div className="sticky top-0 w-full z-40 gradient-frosted pb-2 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60">
+      <div className="sticky top-0 w-full z-40 gradient-frosted shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60 hardware-accelerated">
         <CountdownBanner nextEvent={nextUpcomingEvent} />
 
-        <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom">
+        <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom hardware-accelerated">
           <iframe
             title="Google Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
@@ -543,26 +569,31 @@ function Itinerary() {
           <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,1)] pointer-events-none"></div>
         </div>
 
-        <div className="px-4 py-3 flex space-x-3 overflow-x-auto scrollbar-hide">
-          {PROCESSED_ITINERARY.map((data) => {
-            const isActive = activeDay === data.day;
-            return (
-              <LiquidRippleNode
-                key={data.day} 
-                onClick={() => { setActiveDay(data.day); setActiveEventIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white
-                  ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
-              >
-                <span className={`text-[11px] font-black uppercase mb-0.5 tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>Day {data.day}</span>
-                <span className={`text-sm font-black ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>{data.date}</span>
-              </LiquidRippleNode>
-            )
-          })}
+        {/* 智慧收合區域：CSS Grid 0fr 技巧帶來極致滑順的折疊動畫 */}
+        <div className={`grid transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isScrolled ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
+          <div className="overflow-hidden">
+            <div className="px-4 py-3 pb-4 flex space-x-3 overflow-x-auto scrollbar-hide">
+              {PROCESSED_ITINERARY.map((data) => {
+                const isActive = activeDay === data.day;
+                return (
+                  <LiquidRippleNode
+                    key={data.day} 
+                    onClick={() => { setActiveDay(data.day); setActiveEventIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white
+                      ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
+                  >
+                    <span className={`text-[11px] font-black uppercase mb-0.5 tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>Day {data.day}</span>
+                    <span className={`text-sm font-black ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>{data.date}</span>
+                  </LiquidRippleNode>
+                )
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="p-5 space-y-5 pb-10 relative z-10">
-        <div className="mb-2 px-2 bubble-element">
+        <div className="mb-2 px-2 bubble-element hardware-accelerated">
            <h2 className="text-xl font-black text-slate-800 flex items-center drop-shadow-sm">
              <MapPin size={22} className="mr-2 text-rose-500 drop-shadow-md" /> {PROCESSED_ITINERARY[safeDayIndex]?.region}
            </h2>
@@ -579,7 +610,7 @@ function Itinerary() {
           return (
             <LiquidRippleNode 
               key={idx} onClick={() => setActiveEventIndex(idx)}
-              className={`liquid-panel p-5 cursor-pointer bubble-element
+              className={`liquid-panel p-5 cursor-pointer bubble-element hardware-accelerated
                 ${isActive ? 'subsurface-glow scale-[1.02] ring-2 ring-indigo-300 z-20' : 'opacity-95 scale-[0.98] blur-[0.2px] z-10 bg-white/70'}`}
               style={{ animationDelay: `${idx * 40}ms` }}
             >
@@ -635,19 +666,43 @@ function Itinerary() {
 }
 
 // ==========================================
-// 3. 憑證票夾 (Voucher Wallet)
+// 3. 憑證票夾 (Voucher Wallet) - 含 Canvas 圖片壓縮與 LocalStorage
 // ==========================================
 function VoucherWallet({ vouchers, setVouchers }) {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [form, setForm] = useState({ id: null, title: '', note: '', textContent: '', image: null });
+  const [form, setForm] = useState({ id: null, title: '', note: '', image: null });
+
+  // Canvas 圖片壓縮邏輯 (防止 LocalStorage 爆掉)
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 800;
+        const scaleSize = MAX_WIDTH / img.width;
+        canvas.width = MAX_WIDTH;
+        canvas.height = img.height * scaleSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        // 壓縮成 JPG 品質 0.7，大幅減小體積
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        setForm({...form, image: dataUrl});
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.title) return;
-    const newVoucher = { id: Date.now(), title: form.title, note: form.note || '已上傳', date: '剛上傳', textContent: form.textContent, image: form.image };
+    const newVoucher = { id: Date.now(), title: form.title, note: form.note || '已上傳', date: '剛上傳', image: form.image };
     setVouchers([newVoucher, ...vouchers]);
-    setIsFormOpen(false); setForm({ id: null, title: '', note: '', textContent: '', image: null });
+    setIsFormOpen(false); setForm({ id: null, title: '', note: '', image: null });
   };
 
   const handleDelete = (e, id) => { e.stopPropagation(); setVouchers(vouchers.filter(v => v.id !== id)); };
@@ -655,7 +710,7 @@ function VoucherWallet({ vouchers, setVouchers }) {
   return (
     <div className="p-5 pt-8 space-y-6 relative z-10">
       {isFormOpen ? (
-        <div className="liquid-panel p-6 bubble-element border-indigo-200">
+        <div className="liquid-panel p-6 bubble-element border-indigo-200 hardware-accelerated">
           <h3 className="font-black text-slate-800 mb-5 flex items-center justify-between">
             <span className="flex items-center text-lg"><Plus size={20} className="mr-2 text-indigo-600" /> 新增憑證</span>
             <button type="button" onClick={() => setIsFormOpen(false)} className="text-xs bg-white/90 shadow-sm text-slate-600 font-bold px-4 py-2 rounded-xl active:scale-95 transition-all tension-morph">取消</button>
@@ -663,17 +718,17 @@ function VoucherWallet({ vouchers, setVouchers }) {
           <form onSubmit={handleSubmit} className="space-y-4">
             <input type="text" placeholder="標題 (例: 機票)*" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full bg-white/80 text-base font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
             <input type="text" placeholder="備註 (例: 航廈 1)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} className="w-full bg-white/80 text-sm font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
-            <div className="border-2 border-dashed border-indigo-300/80 rounded-[1.5rem] p-4 text-center bg-white/50 hover:bg-white/80 transition-all relative shadow-[inset_0_4px_10px_rgba(255,255,255,0.9)]">
-              {form.image ? <img src={form.image} alt="Preview" className="mx-auto h-28 object-contain rounded-xl drop-shadow-md" /> : <div className="text-sm font-black text-indigo-500 py-6">點擊上傳截圖以供離線查閱</div>}
-              <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onloadend = () => setForm({...form, image: r.result}); r.readAsDataURL(f); } }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <div className="border-2 border-dashed border-indigo-300/80 rounded-[1.5rem] p-4 text-center bg-white/50 hover:bg-white/80 transition-all relative shadow-[inset_0_4px_10px_rgba(255,255,255,0.9)] overflow-hidden">
+              {form.image ? <img src={form.image} alt="Preview" className="mx-auto h-28 object-contain rounded-xl drop-shadow-md" /> : <div className="text-sm font-black text-indigo-500 py-6">點擊上傳截圖 (自動壓縮防爆掉)</div>}
+              <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
-            <LiquidRippleNode onClick={handleSubmit} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-[1.5rem] text-center shadow-[0_10px_20px_rgba(99,102,241,0.3),inset_0_4px_10px_rgba(255,255,255,0.4)] mt-2">儲存</LiquidRippleNode>
+            <LiquidRippleNode onClick={handleSubmit} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-[1.5rem] text-center shadow-[0_10px_20px_rgba(99,102,241,0.3),inset_0_4px_10px_rgba(255,255,255,0.4)] mt-2">儲存至本機</LiquidRippleNode>
           </form>
         </div>
       ) : (
-        <LiquidRippleNode onClick={() => setIsFormOpen(true)} className="w-full liquid-panel p-6 flex flex-col items-center justify-center gap-3 hover:subsurface-glow group bubble-element">
+        <LiquidRippleNode onClick={() => setIsFormOpen(true)} className="w-full liquid-panel p-6 flex flex-col items-center justify-center gap-3 hover:subsurface-glow group bubble-element hardware-accelerated">
           <div className="bg-white/90 text-indigo-600 p-4 rounded-full group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-500 shadow-[inset_0_4px_10px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)]"><Upload size={28} /></div>
-          <span className="text-sm font-black text-slate-800">新增電子憑證</span>
+          <span className="text-sm font-black text-slate-800">新增電子憑證 (支援離線)</span>
         </LiquidRippleNode>
       )}
 
@@ -681,7 +736,7 @@ function VoucherWallet({ vouchers, setVouchers }) {
         <h3 className="font-black text-slate-800 mb-4 px-2 drop-shadow-sm text-lg">離線票夾</h3>
         <div className="space-y-4">
           {vouchers.map((v, idx) => (
-            <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group" style={{ animationDelay: `${idx * 50}ms` }}>
+            <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group hardware-accelerated" style={{ animationDelay: `${idx * 50}ms` }}>
               <div className="w-4 h-[90%] absolute left-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.5)]"></div>
               <div className="p-4 pl-8 flex-1">
                 <div className="flex justify-between items-start mb-1">
@@ -701,7 +756,7 @@ function VoucherWallet({ vouchers, setVouchers }) {
       {/* 憑證檢視 Modal */}
       {selectedVoucher && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="bg-white/90 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80 animate-in zoom-in-95 cubic-bezier(0.34, 1.56, 0.64, 1)">
+          <div className="bg-white/90 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80 animate-in zoom-in-95 cubic-bezier(0.34, 1.56, 0.64, 1) hardware-accelerated">
             <div className="p-5 flex justify-between items-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 shadow-sm z-10 chromatic-edge">
               <h3 className="font-black text-lg">憑證檢視</h3>
               <button onClick={() => setSelectedVoucher(null)} className="p-2 bg-white/20 rounded-full active:scale-90 transition-transform tension-morph"><X size={20}/></button>
@@ -737,7 +792,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
   return (
     <div className="p-5 pt-8 space-y-6 relative z-10">
       
-      <div className="liquid-panel p-6 flex items-center justify-between bubble-element" style={{animationDelay: '0ms'}}>
+      <div className="liquid-panel p-6 flex items-center justify-between bubble-element hardware-accelerated" style={{animationDelay: '0ms'}}>
         <div>
           <h3 className="font-black text-slate-800 flex items-center text-lg"><Wifi size={20} className="mr-2 text-indigo-600" /> PWA 離線測試</h3>
           <p className="text-xs text-slate-500 font-bold mt-1">模擬玉泉洞無訊號狀態</p>
@@ -747,7 +802,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
         </button>
       </div>
 
-      <div className="liquid-panel p-6 !bg-rose-50/80 !border-rose-200/80 relative overflow-hidden bubble-element chromatic-edge" style={{animationDelay: '50ms'}}>
+      <div className="liquid-panel p-6 !bg-rose-50/80 !border-rose-200/80 relative overflow-hidden bubble-element chromatic-edge hardware-accelerated" style={{animationDelay: '50ms'}}>
         <div className="absolute top-[-10%] right-[-10%] p-4 opacity-10 pointer-events-none"><ShieldAlert size={140} className="text-rose-600" /></div>
         <h2 className="text-xl font-black text-rose-800 mb-5 relative z-10 drop-shadow-sm">海外急難救助</h2>
         <div className="space-y-4 relative z-10">
@@ -762,7 +817,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
         </div>
       </div>
 
-      <div className="liquid-panel p-6 bubble-element" style={{animationDelay: '100ms'}}>
+      <div className="liquid-panel p-6 bubble-element hardware-accelerated" style={{animationDelay: '100ms'}}>
         <h2 className="text-lg font-black text-slate-800 mb-4 drop-shadow-sm">保單與卡片</h2>
         <div className="space-y-4">
           <div className="w-full bg-white/80 p-5 rounded-[2rem] flex justify-between items-center border border-white shadow-[inset_0_4px_8px_rgba(255,255,255,1)]">

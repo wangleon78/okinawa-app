@@ -640,23 +640,22 @@ function Itinerary({ showToast, scrollRef }) {
            </h2>
         </div>
 
-        {/* 🌟 點擊日期標籤時，行程列表也有 iOS 滑入特效 */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeDay}
-            initial={{ opacity: 0, x: 40, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            exit={{ opacity: 0, x: -40, filter: 'blur(10px)' }}
-            transition={{ type: 'spring', damping: 22, stiffness: 200 }}
-            className="space-y-5"
-          >
-            {events.map((evt, idx) => {
-              const isActive = safeIndex === idx;
-              const mapData = {
-                 url: evt.type === 'transport' 
-                  ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title)}`
-                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title)}`
-              };
+        {/* 🌟 移除 AnimatePresence 避免快速點擊引發的 Framer Motion 嵌套死鎖 (空白畫面 Bug) */}
+        {/* 只保留 motion.div，這樣既有液態滑入特效，又不會卡死外層切換 */}
+        <motion.div
+          key={activeDay}
+          initial={{ opacity: 0, x: 40, filter: 'blur(10px)' }}
+          animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
+          transition={{ type: 'spring', damping: 22, stiffness: 200 }}
+          className="space-y-5"
+        >
+          {events.map((evt, idx) => {
+            const isActive = safeIndex === idx;
+            const mapData = {
+               url: evt.type === 'transport' 
+                ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title)}`
+                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title)}`
+            };
 
               return (
                 <LiquidRippleNode 
@@ -723,8 +722,7 @@ function Itinerary({ showToast, scrollRef }) {
                 </LiquidRippleNode>
               );
             })}
-          </motion.div>
-        </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   );

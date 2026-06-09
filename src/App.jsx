@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Home, Map as MapIcon, Ticket, ShieldAlert,
   Plus, Plane, Car, Coffee, ShoppingBag, Bed, Activity,
@@ -7,16 +7,16 @@ import {
   CircleParking, Fuel, PlaneTakeoff, PlaneLanding, RefreshCw, Calculator, PhoneCall, Wifi, WifiOff, Clock
 } from 'lucide-react';
 
-// --- 資料區：最新全景點行程表 ---
+// --- 資料區：全新沖繩全景點行程表 ---
 const ITINERARY_DATA = [
   {
-    day: 1, date: '8/18', title: '抵達與專屬沙灘浮潛', region: '那霸 / 恩納',
+    day: 1, date: '8/18', title: '抵達、北谷拉麵與浮潛', region: '那霸 / 北谷 / 恩納',
     events: [
-      { time: '09:20 - 11:30', title: '降落那霸機場、出關與取車', type: 'transport', icon: PlaneLanding, mapQuery: '那霸機場', desc: '去程 IT230 第一航廈 09:20 落地。辦理入境手續並前往租車營業所完成取車作業，準備開始沖繩之旅。' },
-      { time: '11:30 - 12:30', title: '走高速公路直奔琉球村', type: 'transport', icon: Car, mapQuery: '琉球村', desc: '【車程 60分】行駛沖繩自動車道，沿途欣賞風光，一路向北直奔恩納村的琉球村。' },
-      { time: '12:30 - 14:20', title: '琉球村 (午餐與觀光)', type: 'food', icon: Coffee, mapQuery: '琉球村', desc: '可在免門票區域吃沖繩麵等在地料理，體驗傳統琉球文化 (若行程延後可彈性跳過)。', map: true },
-      { time: '14:20 - 14:40', title: '繼續往北開至飯店', type: 'transport', icon: Car, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay' },
-      { time: '14:40 - 15:00', title: 'Rizzan Sea Park Hotel', type: 'accommodation', icon: Bed, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '抵達 Rizzan Sea Park Hotel 辦理 Check-in，若來不及可先寄放行李。', map: true },
+      { time: '09:20 - 11:30', title: '降落那霸機場、出關與取車', type: 'transport', icon: PlaneLanding, mapQuery: '那霸機場', desc: '去程 IT230 第一航廈 09:20 落地。辦理入境手續並前往租車營業所完成取車作業。' },
+      { time: '11:30 - 12:20', title: '沿海岸公路前往北谷町', type: 'transport', icon: Car, mapQuery: '暖暮 沖縄美浜店', desc: '【車程 50分】離開那霸市區，沿著美麗的海岸公路直奔北谷町。' },
+      { time: '12:20 - 13:20', title: '暖暮拉麵 (沖繩北谷店)', type: 'food', icon: Coffee, mapQuery: '北谷町宮城2-123', desc: '【午餐】剛拿到車的第一餐，享受曾擊敗一蘭的九州濃郁豚骨拉麵，吃飽後可以在旁邊的砂邊海堤稍微拍個照看海。', map: true },
+      { time: '13:20 - 14:00', title: '沿國道 58 號往北開至恩納村', type: 'transport', icon: Car, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '【車程 40分】吃飽喝足，繼續沿著國道 58 號往北開至恩納村的飯店。' },
+      { time: '14:20 - 15:00', title: 'Rizzan Sea Park Hotel', type: 'accommodation', icon: Bed, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '抵達 Rizzan Sea Park Hotel 辦理 Check-in，若來不及可先寄放行李。', map: true },
       { time: '15:30 - 17:30', title: '飯店專屬沙灘浮潛', type: 'activity', icon: Activity, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '參加飯店專屬沙灘浮潛（已預約 15:30）。換上裝備，直接從沙灘下水享受清澈的恩納村海域。', map: true },
       { time: '17:30 - 20:00', title: '飯店內享用高級晚餐', type: 'food', icon: Coffee, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '梳洗後，於飯店內享用高級晚餐與設施。' }
     ]
@@ -25,73 +25,75 @@ const ITINERARY_DATA = [
     day: 2, date: '8/19', title: '北部生態、阿古豬與商場', region: '本部 / 名護',
     events: [
       { time: '07:00 - 08:00', title: '飯店自助餐', type: 'food', icon: Coffee, mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '享用飯店提供的豐富自助早餐，儲備一天活力。' },
-      { time: '08:30 - 09:30', title: '退房，開往北部', type: 'transport', icon: Car, mapQuery: '沖繩美麗海水族館', desc: '辦理 Check-out，行李上車，開往北部。' },
-      { time: '09:30 - 11:30', title: '沖繩美麗海水族館', type: 'activity', icon: Activity, mapQuery: '沖繩美麗海水族館', desc: '黑潮之海必看、大鯨鯊。\n\n💡【攻略】導航「P7北停車場」。動線：4F入口 ➔ 3F珊瑚礁 ➔ 2F黑潮之海(大鯨鯊/Ocean Blue抽號) ➔ 1F深海 ➔ 戶外海豚/海龜館(免費)。', map: true },
-      { time: '11:30 - 12:00', title: '前往古宇利島', type: 'transport', icon: Car, mapQuery: '古宇利大橋', desc: '開車行駛壯麗的跨海大橋前往古宇利島，途中可先用手機點餐。' },
-      { time: '12:00 - 13:00', title: 'KOURI SHRIMP (蝦蝦飯)', type: 'food', icon: Coffee, mapQuery: 'KOURI SHRIMP', desc: '【必吃】古宇利島超人氣蝦蝦飯，蒜香濃郁，搭配海景絕佳。\n\n💡【攻略】先導航「南端展望所」拍全景 ➔ 上橋 ➔ 過橋右轉上坡至蝦蝦飯(客滿停下方漁港走上來)。', map: true },
-      { time: '13:00 - 14:00', title: '古宇利島觀光', type: 'activity', icon: MapIcon, mapQuery: '古宇利島 心型岩', desc: '開車環島看古宇利大橋。\n\n💡【攻略】備案A：橋旁「古宇利海灘」踩水。備案B：「心型岩」備硬幣/平底鞋速拍折返。', map: true },
-      { time: '14:00 - 14:30', title: '前往名護市區', type: 'transport', icon: Car, mapQuery: 'ネオパークオキナワ' },
+      { time: '08:30 - 09:30', title: '退房，開往北部', type: 'transport', icon: Car, mapQuery: '沖繩美麗海水族館', desc: '【車程 60分】辦理 Check-out，行李上車，開往北部。' },
+      { time: '09:30 - 11:30', title: '沖繩美麗海水族館', type: 'activity', icon: Activity, mapQuery: '沖繩美麗海水族館', desc: '黑潮之海必看、大鯨鯊。海豚表演可能來不及，可去咖啡廳「Ocean Blue」與看鯨鯊餵食秀（建議先點餐）。', map: true },
+      { time: '11:30 - 12:00', title: '前往古宇利島', type: 'transport', icon: Car, mapQuery: 'KOURI SHRIMP', desc: '【車程 30分】開車行駛壯麗的跨海大橋前往古宇利島，途中強烈建議先用手機點蝦蝦飯。' },
+      { time: '12:00 - 13:00', title: 'KOURI SHRIMP (蝦蝦飯)', type: 'food', icon: Coffee, mapQuery: 'KOURI SHRIMP', desc: '【午餐 / 必吃】古宇利島超人氣蝦蝦飯，蒜香濃郁，搭配海景絕佳。', map: true },
+      { time: '13:00 - 14:00', title: '古宇利島觀光', type: 'activity', icon: MapIcon, mapQuery: '古宇利島', desc: '開車環島看古宇利大橋。備案：心型岩若行程 delay 可選擇不看。', map: true },
+      { time: '14:00 - 14:30', title: '前往名護市區', type: 'transport', icon: Car, mapQuery: 'ネオパークオキナワ', desc: '【車程 30分】告別海景，開往名護市區。' },
       { time: '14:30 - 16:30', title: 'NEO Park (名護動植物園)', type: 'activity', icon: Activity, mapQuery: 'ネオパークオキナワ', desc: '開放式柵欄動物園。必看水豚、羊駝、天竺鼠，遊園車、紅熊貓咖啡館、喜馬拉雅小熊貓、砂貓、飛禽秀。', map: true },
-      { time: '16:45 - 17:45', title: '御菓子御殿 名護店', type: 'shopping', icon: ShoppingBag, mapQuery: '御菓子御殿 名護店', desc: '【北部伴手禮】必買：元祖紅芋塔、紅包、紅月夜、鹽芝麻金楚糕、水果風味點心、沖繩黑糖。', map: true },
-      { time: '18:00 - 20:00', title: '百年古家 大家 (Ufuya)', type: 'food', icon: Coffee, mapQuery: '百年古家 大家', desc: '【已訂位】享用阿古豬。一個月前訂，涮涮鍋、特色飲品、泡芙。氣氛極佳！', map: true },
-      { time: '20:00 - 21:00', title: '南下至 SPORTS DEPO', type: 'transport', icon: Car, mapQuery: 'SPORTS DEPO 泡瀬店', desc: '高速公路南下沖繩市 Depo Sports (運動用品)，九點關門爭取一下時間。' },
+      { time: '16:45 - 17:45', title: '御菓子御殿 名護店', type: 'shopping', icon: ShoppingBag, mapQuery: '御菓子御殿 名護店', desc: '【北部伴手禮採買】必買：元祖紅芋塔、紅包、紅月夜、鹽芝麻金楚糕、水果風味點心、沖繩黑糖。', map: true },
+      { time: '18:00 - 20:00', title: '百年古家 大家 (Ufuya)', type: 'food', icon: Coffee, mapQuery: '百年古家 大家', desc: '【晚餐 / 已訂位】享用阿古豬。一個月前訂，涮涮鍋、特色飲品、泡芙。氣氛極佳！', map: true },
+      { time: '20:00 - 21:00', title: '南下至 SPORTS DEPO', type: 'transport', icon: Car, mapQuery: 'SPORTS DEPO 泡瀬店', desc: '【車程 60分】高速公路南下沖繩市 Depo Sports (運動用品)，九點關門爭取一下時間。' },
       { time: '21:00 - 21:30', title: 'Okinawa Grand Mer Resort', type: 'accommodation', icon: Bed, mapQuery: 'Okinawa Grand Mer Resort', desc: '抵達 Okinawa Grand Mer Resort 辦理 Check-in。', map: true },
-      { time: '21:30 - 23:00', title: 'MaxValu 超市', type: 'shopping', icon: ShoppingBag, mapQuery: 'MaxValu 泡瀬店', desc: '車程 5-10 分鐘。晚上八點後有半價熟食，體驗日本在地人深夜超市採買，順便買隔日早餐。', map: true }
+      { time: '21:30 - 23:00', title: 'MaxValu 超市', type: 'shopping', icon: ShoppingBag, mapQuery: 'MaxValu 泡瀬店', desc: '車程 5-10 分鐘。晚上八點後有半價熟食，體驗日本在地人深夜超市採買，順便買隔日早餐。結束後回飯店。', map: true }
     ]
   },
   {
     day: 3, date: '8/20', title: '海中展望、海葡萄與美國村', region: '西海岸 / 北谷',
     events: [
       { time: '08:00 - 09:00', title: 'The Rose Garden', type: 'food', icon: Coffee, mapQuery: 'The Rose Garden Okinawa', desc: '從飯店出發開車十分鐘，享用豐盛美味的美式早午餐。', map: true },
-      { time: '09:00 - 09:50', title: '開往部瀨名', type: 'transport', icon: Car, mapQuery: '部瀬名海中公園', desc: '開 50min 到部瀨名。' },
+      { time: '09:00 - 09:50', title: '開往部瀨名', type: 'transport', icon: Car, mapQuery: '部瀬名海中公園', desc: '【車程 50分】吃飽後驅車前往部瀨名海中公園。' },
       { time: '09:50 - 11:20', title: '部瀨名海中公園', type: 'activity', icon: Activity, mapQuery: '部瀬名海中公園', desc: '一到現場先看好玻璃船最近的班次直接劃位。搭乘免費接駁車、海中展望塔、玻璃底船看熱帶魚。', map: true },
-      { time: '11:20 - 11:45', title: '往南前往元祖海葡萄', type: 'transport', icon: Car, mapQuery: '元祖海ぶどう 本店', desc: '沿國道 58 號往南前往元祖海葡萄。' },
+      { time: '11:20 - 11:45', title: '往南前往元祖海葡萄', type: 'transport', icon: Car, mapQuery: '元祖海ぶどう 本店', desc: '【車程 25分】沿國道 58 號往南前往元祖海葡萄。' },
       { time: '11:45 - 13:00', title: '元祖海葡萄總店', type: 'food', icon: Coffee, mapQuery: '元祖海ぶどう 本店', desc: '【午餐】必點海葡萄蓋飯、豪華海鮮丼飯，口感波波脆脆超特別。', map: true },
-      { time: '13:00 - 13:10', title: '往北開前往萬座毛', type: 'transport', icon: Car, mapQuery: '萬座毛' },
-      { time: '13:10 - 14:00', title: '萬座毛', type: 'activity', icon: MapIcon, mapQuery: '萬座毛', desc: '看斷崖絕景與拍照 (風很大)。\n\n💡【攻略】停「遊客中心」免費。動線：1F ➔ 戶外步道 ➔ 第1觀景台(象鼻岩) ➔ 環步道(抓緊帽子) ➔ 2F吹冷氣。', map: true },
-      { time: '14:00 - 14:50', title: '沿國道 58 號前往美國村', type: 'transport', icon: Car, mapQuery: '美浜アメリカンビレッジ', desc: '直奔美國村導航，並停放在靠海邊的「北谷公園（日落海灘）免費停車場」或 Aeon 旁邊的大型公共停車場。' },
-      { time: '14:50 - 19:30', title: '美國村 (逛街、晚餐與夕陽)', type: 'activity', icon: Activity, mapQuery: '美浜アメリカンビレッジ', desc: '逛 American Depot 與 Depot Island (找OKICHU客製拖鞋、貨車彩繪牆、天使之翼)。晚餐吃 Taco Rice Kijimuna 或グルメ迴轉壽司。傍晚沿日落步道買 Zhyvago 咖啡或 Blue Seal 冰淇淋看夕陽。', map: true, parking: { name: '北谷町營公共停車場', fee: '免費 (位位難求，需耐心尋找)' } },
+      { time: '13:00 - 13:10', title: '往北開前往萬座毛', type: 'transport', icon: Car, mapQuery: '萬座毛', desc: '【車程 10分】往北開一小段前往萬座毛。' },
+      { time: '13:10 - 14:00', title: '萬座毛', type: 'activity', icon: MapIcon, mapQuery: '萬座毛', desc: '看斷崖絕景與拍照 (風很大)。停「遊客中心」免費。', map: true },
+      { time: '14:00 - 14:50', title: '沿國道 58 號直奔美國村', type: 'transport', icon: Car, mapQuery: '北谷公園サンセットビーチ', desc: '【車程 50分】直奔美國村導航並停放在靠海邊的「北谷公園(日落海灘)免費停車場」或 Aeon 旁邊的大型公共停車場。' },
+      { time: '14:50 - 16:30', title: '美國村逛街 (美式復古區)', type: 'activity', icon: Activity, mapQuery: '美浜アメリカンビレッジ', desc: '❶ American Depot：美式復古風、二手古著、潮牌 SOHO。\n❷ Depot Island：E棟「OKICHU」客製化沙灘拖鞋 ➔ A棟「貨車彩繪牆」 ➔ Distortion Seaside 4樓「天使之翼」IG打卡。', map: true, parking: { name: '北谷町營公共停車場', fee: '免費 (位位難求，需耐心尋找)' } },
+      { time: '16:30 - 18:20', title: '美國村晚餐', type: 'food', icon: Coffee, mapQuery: 'Taco Rice Cafe Kijimuna Depot Island', desc: '【晚餐】前往 Depot Island C 棟 2 樓吃「Taco Rice Cafe Kijimuna」招牌歐姆蛋塔可飯，或去「グルメ迴轉壽司市場」抽號碼牌。', map: true },
+      { time: '18:20 - 19:30', title: '日落海灘與夕陽步道', type: 'activity', icon: MapIcon, mapQuery: 'Zhyvago Coffee Works Okinawa', desc: '19:15 日落。往海邊移動，沿著北谷日落步道走到日落海灘。買「Zhyvago Coffee Works」工業風咖啡或「Blue Seal」二樓冰淇淋，坐在海堤上吹海風看夕陽。', map: true },
       { time: '22:00', title: '返回飯店', type: 'accommodation', icon: Bed, mapQuery: 'Okinawa Grand Mer Resort', desc: '返回飯店休息 (有溫泉需另收費)。' }
     ]
   },
   {
     day: 4, date: '8/21', title: '鐘乳石探險、瀨長島與國際通', region: '南城 / 那霸',
     events: [
-      { time: '08:30 - 09:30', title: 'A&W 泡瀨店', type: 'food', icon: Coffee, mapQuery: 'A&W Awase', desc: '體驗沖繩特有的美式速食，必點招牌漢堡、圈圈薯條 (Drive in 點餐超有特色)。', map: true },
-      { time: '09:30 - 10:15', title: '南下至南城市', type: 'transport', icon: Car, mapQuery: 'おきなわワールド', desc: '帶著行李退房，從中部沖繩市南下至充滿神聖氣息的南城市。' },
-      { time: '10:15 - 12:15', title: '玉泉洞 / 沖繩世界', type: 'activity', icon: Activity, mapQuery: 'おきなわワールド', desc: '直接進入「玉泉洞」看鐘乳石。11:00 左右回王國村(想看 10:30 太鼓表演可稍作停留)。經過名產區可試喝毒蛇酒或買伴手禮。', map: true },
-      { time: '12:15 - 12:30', title: '離開園區', type: 'transport', icon: Car, mapQuery: 'おきなわワールド', desc: '避開園區內用餐的高峰人潮。' },
+      { time: '08:30 - 09:30', title: 'A&W 泡瀨店', type: 'food', icon: Coffee, mapQuery: 'A&W Awase', desc: '體驗沖繩特有的美式速食，必點招牌漢堡、圈圈薯條 (Drive in 點餐超有特色)。備案: JEF漢堡。', map: true },
+      { time: '09:30 - 10:15', title: '南下至南城市', type: 'transport', icon: Car, mapQuery: 'おきなわワールド', desc: '【車程 45分】帶著行李退房，從中部沖繩市南下至充滿神聖氣息的南城市。' },
+      { time: '10:15 - 12:15', title: '玉泉洞 / 沖繩世界', type: 'activity', icon: Activity, mapQuery: 'おきなわワールド', desc: '抵達後直接進入「玉泉洞」參觀鐘乳石。11:00 左右回到王國村逛逛（若想看 10:30 太鼓表演可稍作停留）經過名產區可試喝毒蛇酒或買伴手禮。', map: true },
+      { time: '12:15 - 12:30', title: '離開園區', type: 'transport', icon: Car, mapQuery: '屋宜家', desc: '避開園區內用餐的高峰人潮。' },
       { time: '12:30 - 13:40', title: '屋宜家 (やぎや)', type: 'food', icon: Coffee, mapQuery: '屋宜家', desc: '【午餐】步行於百年紅瓦古民家，氣氛極佳。推薦「黑糖黃豆粉黑蜜蕎麥麵」作為甜點。', map: true },
-      { time: '13:40 - 14:30', title: '前往瀨長島', type: 'transport', icon: Car, mapQuery: '瀨長島 Umikaji Terrace', desc: '由南向北沿著海岸線行駛，前往看海秘境。' },
-      { time: '14:30 - 16:00', title: '瀨長島 (下午茶)', type: 'activity', icon: MapIcon, mapQuery: '瀨長島 Umikaji Terrace', desc: '逛瀨長島展望台、Umikaji Terrace 小希臘商場，看飛機起降與海景。\n\n💡【攻略】幸福鬆餅內用極久，果斷選「外帶(Takeout)」約10分 ➔ 外圍階梯看海吃。', map: true },
-      { time: '16:15 - 16:45', title: '進入那霸市區', type: 'transport', icon: Car, mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '結束海岸線行程，驅車進入車水馬龍的那霸市中心。' },
+      { time: '13:40 - 14:30', title: '前往瀨長島', type: 'transport', icon: Car, mapQuery: '瀨長島 Umikaji Terrace', desc: '【車程 50分】由南向北沿著海岸線行駛，前往看海秘境瀨長島。' },
+      { time: '14:30 - 16:00', title: '瀨長島 (下午茶)', type: 'activity', icon: MapIcon, mapQuery: '瀨長島 Umikaji Terrace', desc: '逛瀨長島展望台、Umikaji Terrace 小希臘商場。吃「幸福鬆餅(一到先寫預約表)」、看飛機起降與海景 (看完可先走)。', map: true },
+      { time: '16:15 - 16:45', title: '進入那霸市區', type: 'transport', icon: Car, mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '【車程 30分】結束海岸線行程，驅車進入車水馬龍的那霸市中心。' },
       { time: '16:45 - 17:10', title: 'Almont Hotel 寄放行李', type: 'accommodation', icon: Bed, mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '抵達位於縣廳前站的飯店先行寄放行李，減輕負擔以利後續還車。', map: true },
-      { time: '17:10 - 17:40', title: '市區營業所還車', type: 'transport', icon: Car, mapQuery: '那霸市', desc: '【注意時程】前往那霸市區營業所完成還車手續，請記得預留把油箱加滿的時間。', gasStation: true },
-      { time: '17:40 - 21:00', title: '國際通深度遊與晚餐', type: 'food', icon: Coffee, mapQuery: '國際通', desc: '晚餐吃傑克牛排(先抽號碼牌)。體驗那霸市區夜生活：Blue Seal、豬肉蛋飯糰、屋台村、MEGA Donki、Calbee+、鹽屋雪鹽冰淇淋、RYUBO百貨、暖暮拉麵、琉家拉麵、ふくぎや年輪蛋糕。', map: true },
+      { time: '17:10 - 17:40', title: '市區營業所還車', type: 'transport', icon: Car, mapQuery: '那霸市', desc: '前往那霸市區營業所完成還車手續，請記得預留把油箱加滿的時間。Cheap Car Hire Okinawa (Tahirai)。', gasStation: true },
+      { time: '17:40 - 21:00', title: '國際通深度遊與晚餐', type: 'food', icon: Coffee, mapQuery: '國際通', desc: '還完車直接市區逛街。晚餐吃傑克牛排(先抽號碼牌)。\n\n💡【夜生活清單】Blue Seal、豬肉蛋飯糰、屋台村、MEGA Donki、Calbee+紅芋薯條、鹽屋雪鹽冰淇淋、RYUBO百貨、暖暮/琉家拉麵、ふくぎや年輪蛋糕。', map: true },
       { time: '22:00', title: '返回飯店休息', type: 'accommodation', icon: Bed, mapQuery: 'Almont Hotel Naha-Kenchomae' }
     ]
   },
   {
     day: 5, date: '8/22', title: '文化巡禮、波上宮與無敵日落', region: '那霸 / 浦添',
     events: [
-      { time: '08:00 - 08:45', title: '吃早餐搭單軌往首里', type: 'transport', icon: Coffee, mapQuery: '首里城', desc: '吃個超商早餐，搭乘單軌電車前往「首里站」，步行至首里城。', map: true },
-      { time: '08:45 - 10:15', title: '首里城', type: 'activity', icon: MapIcon, mapQuery: '首里城', desc: '參觀修復工程、觀景台、買紀念幣。\n\n💡【攻略】走無階梯「藍色路線」。動線：歡會門 ➔ 廣福門 ➔ 奉神門(買票400円入內) ➔ 正殿(看修復) ➔ 東崎(市景)。外圍免費。', map: true },
+      { time: '08:00 - 08:45', title: '早餐與搭單軌往首里', type: 'transport', icon: Coffee, mapQuery: '首里城', desc: '吃個超商早餐或「福助の玉子焼き」，搭乘單軌電車前往「首里站」，步行至首里城。', map: true },
+      { time: '08:45 - 10:15', title: '首里城', type: 'activity', icon: MapIcon, mapQuery: '首里城', desc: '參觀修復工程、觀景台、買紀念幣。\n\n💡【攻略】走無階梯「藍色路線」。動線：歡會門 ➔ 廣福門 ➔ 奉神門(買票入內) ➔ 正殿(看修復) ➔ 東崎。', map: true },
       { time: '10:15 - 11:00', title: '步行回單軌前往牧志站', type: 'transport', icon: Car, mapQuery: '第一牧志公設市場', desc: '步行回單軌首里站 ➔ 搭單軌回「牧志站」 ➔ 步行進市場。' },
-      { time: '11:00 - 13:00', title: '第一牧志公設市場', type: 'food', icon: Coffee, mapQuery: '第一牧志公設市場', desc: '一樓挑海鮮，二樓代客料理。\n\n💡【攻略】確認標價(100g/1kg)多比價！動線：1F買海鮮(夜光貝/龍蝦)或肉品 ➔ 拿單據 ➔ 2F代客料理。必買：2F步沙翁(易售完)。', map: true },
-      { time: '13:00 - 13:20', title: '搭計程車前往波上宮', type: 'transport', icon: Car, mapQuery: '波上宮', desc: '吃飽喝足，直接從市場外圍攔一台計程車前往波上宮（車程約 10 分鐘，省去大太陽下走 30 分鐘的體力）。' },
+      { time: '11:00 - 13:00', title: '第一牧志公設市場', type: 'food', icon: Coffee, mapQuery: '第一牧志公設市場', desc: '【午餐】11點抵達，一樓挑海鮮，二樓代客料理。記得買步沙翁！', map: true },
+      { time: '13:00 - 13:20', title: '搭計程車前往波上宮', type: 'transport', icon: Car, mapQuery: '波上宮', desc: '吃飽喝足，直接從市場外叫一台計程車前往波上宮（車程約 10 分鐘，省去大太陽下走 30 分鐘的體力）。' },
       { time: '13:20 - 14:20', title: '波上宮', type: 'activity', icon: MapIcon, mapQuery: '波上宮', desc: '建在珊瑚礁斷崖上的琉球最高神社。買「沖繩限定」小書包御守，波之上海灘拍神社。', map: true },
       { time: '14:20 - 14:50', title: '搭計程車前往 PARCO', type: 'transport', icon: Car, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '從波上宮直接搭計程車前往 PARCO CITY（車資約 1,500 - 2,000 日圓）。' },
-      { time: '14:50 - 19:30', title: 'PARCO CITY 大採買', type: 'shopping', icon: ShoppingBag, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '進行免稅服飾、吉伊卡哇等大採買。\n\n💡【攻略】免稅：店內 或 1F退(護照+實體卡)。動線：直攻3F(吉伊卡哇/阿卡將/運動/敘敘苑) ➔ 1F退稅 ➔ 2F海景美食區(極味屋/Taco)看夕陽。', map: true },
-      { time: '19:30 - 20:30', title: 'PARCO CITY 海景晚餐', type: 'food', icon: Coffee, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '在無敵海景美食街享用敘敘苑燒肉、迴轉壽司、極味屋、Taco。', map: true },
+      { time: '14:50 - 19:30', title: 'PARCO CITY 大採買', type: 'shopping', icon: ShoppingBag, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '先鎖定目標！進行免稅服飾、吉伊卡哇等大採買，並於 19:15 欣賞西海岸絕美夕陽 (可能要先預約晚上的計程車)。', map: true },
+      { time: '19:30 - 20:30', title: 'PARCO CITY 海景晚餐', type: 'food', icon: Coffee, mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '在無敵海景美食街享用：敘敘苑燒肉、三浦三崎港迴轉壽司、極味屋、鳥玉、Taco。逛吉伊卡哇獅薩專賣店、Akachan Honpo、SAN-A超市、3樓namco、運動用品。', map: true },
       { time: '22:00', title: '叫計程車返回飯店', type: 'transport', icon: Car, mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '叫一台計程車直接返回飯店，車資平攤下來非常划算。記得預約明天清晨去機場的車！' }
     ]
   },
   {
     day: 6, date: '8/23', title: '賦歸', region: '那霸機場',
     events: [
-      { time: '05:30 - 06:00', title: '機場早餐', type: 'food', icon: Coffee, mapQuery: 'ポーたま 那覇空港国内線到着ロビー店', desc: '珀塔瑪 那霸機場(國際線航廈 4樓 北側美食區，炸蝦豬肉蛋飯糰或是苦瓜天婦羅口味)。七點開或超商簡單食物。', map: true },
-      { time: '06:00 - 06:15', title: '搭計程車抵達那霸機場', type: 'transport', icon: Car, mapQuery: '那霸機場', desc: '搭乘預約好的計程車，輕鬆前往那霸機場準備登機。' },
-      { time: '08:10', title: '班機起飛，滿載而歸！', type: 'activity', icon: PlaneTakeoff, mapQuery: '那霸機場', desc: '回程航班 MM921，08:10 起飛。帶著滿滿的美好回憶，搭機返回溫暖的家。', map: true }
+      { time: '06:30 - 07:00', title: '機場早餐', type: 'food', icon: Coffee, mapQuery: 'ポーたま 那覇空港国内線到着ロビー店', desc: '珀塔瑪 那霸機場 (國際線航廈 4樓 北側美食區，炸蝦豬肉蛋飯糰或苦瓜天婦羅)。七點開門，或吃超商簡單食物。', map: true },
+      { time: '07:00 - 07:15', title: '搭計程車抵達那霸機場', type: 'transport', icon: Car, mapQuery: '那霸機場', desc: '搭乘預約好的計程車，輕鬆前往那霸機場準備登機。' },
+      { time: '08:10', title: '班機起飛，滿載而歸！', type: 'activity', icon: PlaneTakeoff, mapQuery: '那霸機場', desc: '回程航班 08:10 起飛。帶著滿滿的美好回憶，搭機返回溫暖的家。', map: true }
     ]
   }
 ];
@@ -116,6 +118,7 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   const wrapperRef = useRef(null);
 
   const handleClick = (e) => {
+    if (!wrapperRef.current) return;
     const rect = wrapperRef.current.getBoundingClientRect();
     const size = Math.max(rect.width, rect.height);
     const x = e.clientX - rect.left - size / 2;
@@ -148,6 +151,25 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   );
 };
 
+// --- 🌟 NavButton 移至最外層，避免重新掛載重置動畫 ---
+const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
+  const isActive = activeTab === id;
+  return (
+    <LiquidRippleNode 
+      onClick={() => setActiveTab(id)}
+      className="relative flex flex-col items-center justify-center w-full py-4 space-y-1 group cursor-pointer"
+    >
+      {isActive && (
+        <div className="absolute inset-0 bg-indigo-50/80 rounded-[2.5rem] bubble-element -z-10 shadow-[inset_0_4px_10px_rgba(255,255,255,1)] border border-indigo-100"></div>
+      )}
+      <div className={`transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
+        <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+      </div>
+      <span className={`text-[11px] font-extrabold transition-all duration-300 ${isActive ? 'opacity-100 text-indigo-700' : 'opacity-80 text-slate-500'}`}>{label}</span>
+    </LiquidRippleNode>
+  );
+};
+
 // --- 🌟 全息環境粒子背景 (強制 GPU 渲染防卡頓) ---
 const AmbientBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5] hardware-accelerated">
@@ -163,25 +185,41 @@ export default function App() {
   const [isOffline, setIsOffline] = useState(false); 
   const [toastMsg, setToastMsg] = useState({ text: '', visible: false });
 
+  const showToast = (msg) => {
+    setToastMsg({ text: msg, visible: true });
+    setTimeout(() => setToastMsg({ text: '', visible: false }), 2500);
+  };
+
   // 1. API 狀態提升到 App 層，防止切換 Tab 時重新 Fetch 造成卡頓
   const [exchangeRate, setExchangeRate] = useState(0.215);
   const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
   const [isRateLive, setIsRateLive] = useState(false);
 
-  // 2. LocalStorage 讀取憑證 (加入防呆機制)
-  const [vouchers, setVouchers] = useState(() => {
-    try {
-      const saved = localStorage.getItem('oki-vouchers-v2');
-      return saved ? JSON.parse(saved) : [{ id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '使用者上傳', image: null }];
-    } catch (e) {
-      return [];
-    }
-  });
+  // 2. Artifact 專用的 window.storage API (包含安全防護降級)
+  const [vouchers, setVouchers] = useState([
+    { id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '使用者上傳', image: null }
+  ]);
+  const [isVouchersLoaded, setIsVouchersLoaded] = useState(false);
 
-  // 監聽憑證改變並存入 LocalStorage
   useEffect(() => {
-    localStorage.setItem('oki-vouchers-v2', JSON.stringify(vouchers));
-  }, [vouchers]);
+    if (typeof window !== 'undefined' && window.storage) {
+      window.storage.get('oki-vouchers-v3')
+        .then(res => { if (res?.value) setVouchers(JSON.parse(res.value)); })
+        .catch(() => {}) // key 不存在時靜默失敗
+        .finally(() => setIsVouchersLoaded(true));
+    } else {
+      setIsVouchersLoaded(true); // 非 Artifact 環境直接解鎖
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!isVouchersLoaded) return; // 讀完前不要存，避免覆蓋舊資料
+    if (typeof window !== 'undefined' && window.storage) {
+      window.storage.set('oki-vouchers-v3', JSON.stringify(vouchers)).catch(() => {
+        showToast('⚠️ 儲存空間可能已滿，請先刪除部分票券！');
+      });
+    }
+  }, [vouchers, isVouchersLoaded]);
 
   // 初次載入 Fetch API
   useEffect(() => {
@@ -192,10 +230,15 @@ export default function App() {
           if (data?.current_weather) {
             const temp = Math.round(data.current_weather.temperature);
             const code = data.current_weather.weathercode;
-            let desc = '晴朗'; let color = 'from-sky-500/80 to-blue-600/80';
-            if (code >= 1 && code <= 3) { desc = '多雲'; color = 'from-indigo-500/80 to-indigo-700/80'; }
-            if (code >= 51 && code <= 67) { desc = '雨天'; color = 'from-slate-600/80 to-slate-800/80'; }
-            if (code >= 71 && code <= 99) { desc = '雷陣雨'; color = 'from-slate-700/80 to-slate-900/80'; }
+            
+            const WEATHER_MAP = [
+              { range: [1, 3],   desc: '多雲',   color: 'from-indigo-500/80 to-indigo-700/80' },
+              { range: [51, 67], desc: '雨天',   color: 'from-slate-600/80 to-slate-800/80' },
+              { range: [71, 99], desc: '雷陣雨', color: 'from-slate-700/80 to-slate-900/80' },
+            ];
+            const match = WEATHER_MAP.find(({ range }) => code >= range[0] && code <= range[1]);
+            const { desc, color } = match || { desc: '晴朗', color: 'from-sky-500/80 to-blue-600/80' };
+            
             setWeather({ temp: `${temp}°`, desc, color });
           }
         }).catch(() => setWeather({ temp: '--', desc: '無法取得', color: 'from-slate-500/80 to-slate-600/80' }));
@@ -211,14 +254,11 @@ export default function App() {
     }
   }, [isOffline]);
 
-  const showToast = (msg) => {
-    setToastMsg({ text: msg, visible: true });
-    setTimeout(() => setToastMsg({ text: '', visible: false }), 2500);
-  };
-
   useEffect(() => {
     // === 🌟 iOS 27 Liquid Glass 極致核心樣式 (修復圖層閃爍) ===
+    if (document.getElementById('oki-global-styles')) return;
     const style = document.createElement('style');
+    style.id = 'oki-global-styles';
     style.innerHTML = `
       html, body { 
         overflow-x: hidden; 
@@ -286,7 +326,6 @@ export default function App() {
       }
       @keyframes holoReflect { 0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); } 100% { transform: translateX(50%) translateY(50%) rotate(360deg); } }
 
-      /* 移除了可能導致卡頓的動態 filter: blur，改用單純透明度與位移 */
       @keyframes bubbleEnter {
         0% { opacity: 0; transform: scale(0.9) translateY(20px); }
         100% { opacity: 1; transform: scale(1) translateY(0); }
@@ -318,33 +357,15 @@ export default function App() {
       .animate-ripple { animation: rippleEffect 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     `;
     document.head.appendChild(style);
-    return () => document.head.removeChild(style);
   }, []);
-
-  const NavButton = ({ id, icon: Icon, label }) => {
-    const isActive = activeTab === id;
-    return (
-      <LiquidRippleNode 
-        onClick={() => setActiveTab(id)}
-        className="relative flex flex-col items-center justify-center w-full py-4 space-y-1 group cursor-pointer"
-      >
-        {isActive && (
-          <div className="absolute inset-0 bg-indigo-50/80 rounded-[2.5rem] bubble-element -z-10 shadow-[inset_0_4px_10px_rgba(255,255,255,1)] border border-indigo-100"></div>
-        )}
-        <div className={`transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
-          <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-        </div>
-        <span className={`text-[11px] font-extrabold transition-all duration-300 ${isActive ? 'opacity-100 text-indigo-700' : 'opacity-80 text-slate-500'}`}>{label}</span>
-      </LiquidRippleNode>
-    );
-  };
 
   return (
     <div className="fixed inset-0 text-slate-800 font-sans selection:bg-indigo-100 overflow-hidden flex flex-col items-center">
       <AmbientBackground />
       {toastMsg.visible && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center bubble-element text-indigo-900 border-white shadow-xl hardware-accelerated">
-          <CheckCircle size={18} className="mr-2 text-emerald-500" /> {toastMsg.text}
+          {toastMsg.text.includes('⚠️') ? <ShieldAlert size={18} className="mr-2 text-amber-500" /> : <CheckCircle size={18} className="mr-2 text-emerald-500" />} 
+          {toastMsg.text}
         </div>
       )}
 
@@ -359,23 +380,23 @@ export default function App() {
         {/* 使用提早 Fetch 好的狀態，切換 Tab 零延遲 */}
         {activeTab === 'dashboard' && <Dashboard exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
         {activeTab === 'itinerary' && <Itinerary showToast={showToast} />}
-        {activeTab === 'vouchers' && <VoucherWallet vouchers={vouchers} setVouchers={setVouchers} />}
+        {activeTab === 'vouchers' && <VoucherWallet vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
         {activeTab === 'emergency' && <EmergencyKit isOffline={isOffline} setIsOffline={setIsOffline} />}
       </main>
 
-      {/* 底部導航：改用絕對置中 (left-0 right-0 mx-auto)，避免 transform 造成的偏移 */}
+      {/* 底部導航：絕對置中 */}
       <nav className="fixed bottom-6 left-0 right-0 mx-auto w-[92%] max-w-md z-50 nav-frosted rounded-[3rem] shadow-[0_20px_40px_rgba(31,38,135,0.15),inset_0_4px_10px_rgba(255,255,255,1)] flex justify-around items-center px-2 py-1 border border-white chromatic-edge hardware-accelerated">
-        <NavButton id="dashboard" icon={Home} label="動態" />
-        <NavButton id="itinerary" icon={MapIcon} label="行程" />
-        <NavButton id="vouchers" icon={Ticket} label="票夾" />
-        <NavButton id="emergency" icon={ShieldAlert} label="應變" />
+        <NavButton id="dashboard" icon={Home} label="動態" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <NavButton id="itinerary" icon={MapIcon} label="行程" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <NavButton id="vouchers" icon={Ticket} label="票夾" activeTab={activeTab} setActiveTab={setActiveTab} />
+        <NavButton id="emergency" icon={ShieldAlert} label="應變" activeTab={activeTab} setActiveTab={setActiveTab} />
       </nav>
     </div>
   );
 }
 
 // ==========================================
-// 1. 動態總覽 (Dashboard) 狀態已提升，速度極快
+// 1. 動態總覽 (Dashboard) 
 // ==========================================
 function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, weather, isOffline }) {
   const [jpyInput, setJpyInput] = useState('');
@@ -489,15 +510,19 @@ function CountdownBanner({ nextEvent }) {
     if (!nextEvent || !nextEvent.timeObj) return;
     const timer = setInterval(() => {
       const distance = nextEvent.timeObj.getTime() - new Date().getTime();
+      
+      // 加入已過期的守衛判斷，停止計時
       if (distance < 0) {
         setTimeLeft('進行中或已結束');
-      } else {
-        const d = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((distance % (1000 * 60)) / 1000);
-        setTimeLeft(`${d > 0 ? d+'天 ' : ''}${h > 0 || d > 0 ? h+'時 ' : ''}${m}分 ${s}秒`);
+        clearInterval(timer);
+        return;
       }
+      
+      const d = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+      setTimeLeft(`${d > 0 ? d+'天 ' : ''}${h > 0 || d > 0 ? h+'時 ' : ''}${m}分 ${s}秒`);
     }, 1000);
     return () => clearInterval(timer);
   }, [nextEvent]);
@@ -513,9 +538,9 @@ function CountdownBanner({ nextEvent }) {
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary) - 加入滾動隱藏標籤
+// 2. 行程嚮導與地圖 (Itinerary) - 智慧折疊標籤
 // ==========================================
-function Itinerary() {
+function Itinerary({ showToast }) {
   const [activeDay, setActiveDay] = useState(1);
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
@@ -549,9 +574,8 @@ function Itinerary() {
     return () => mainScroll.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const rawDayIndex = PROCESSED_ITINERARY.findIndex(d => d.day === activeDay);
-  const safeDayIndex = Math.max(0, rawDayIndex);
-  const events = PROCESSED_ITINERARY[safeDayIndex]?.events || [];
+  const dayData = PROCESSED_ITINERARY.find(d => d.day === activeDay) ?? PROCESSED_ITINERARY[0];
+  const events = dayData?.events ?? [];
   const safeIndex = (activeEventIndex >= 0 && activeEventIndex < events.length) ? activeEventIndex : 0;
   const activeMapQuery = events[safeIndex]?.mapQuery || events[safeIndex]?.title || 'Okinawa';
 
@@ -578,7 +602,11 @@ function Itinerary() {
                 return (
                   <LiquidRippleNode
                     key={data.day} 
-                    onClick={() => { setActiveDay(data.day); setActiveEventIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                    onClick={() => { 
+                      setActiveDay(data.day); 
+                      setActiveEventIndex(0); 
+                      document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); 
+                    }}
                     className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white
                       ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
                   >
@@ -595,7 +623,7 @@ function Itinerary() {
       <div className="p-5 space-y-5 pb-10 relative z-10">
         <div className="mb-2 px-2 bubble-element hardware-accelerated">
            <h2 className="text-xl font-black text-slate-800 flex items-center drop-shadow-sm">
-             <MapPin size={22} className="mr-2 text-rose-500 drop-shadow-md" /> {PROCESSED_ITINERARY[safeDayIndex]?.region}
+             <MapPin size={22} className="mr-2 text-rose-500 drop-shadow-md" /> {dayData.region}
            </h2>
         </div>
 
@@ -611,7 +639,7 @@ function Itinerary() {
             <LiquidRippleNode 
               key={idx} onClick={() => setActiveEventIndex(idx)}
               className={`liquid-panel p-5 cursor-pointer bubble-element hardware-accelerated
-                ${isActive ? 'subsurface-glow scale-[1.02] ring-2 ring-indigo-300 z-20' : 'opacity-95 scale-[0.98] blur-[0.2px] z-10 bg-white/70'}`}
+                ${isActive ? 'subsurface-glow scale-[1.02] ring-2 ring-indigo-300 z-20' : 'opacity-90 scale-[0.98] z-10 bg-white/70'}`}
               style={{ animationDelay: `${idx * 40}ms` }}
             >
               <div className="flex items-start">
@@ -646,11 +674,13 @@ function Itinerary() {
                   )}
                   {evt.gasStation && (
                     <a href="https://www.google.com/maps/search/加油站/@26.212312,127.679157,14z" target="_blank" rel="noreferrer"
+                      onClick={() => showToast('正在為您開啟地圖搜尋加油站...')}
                       className="w-full flex items-center justify-center bg-rose-50/90 border border-rose-200 text-rose-700 p-4 rounded-[1.5rem] active:scale-95 transition-transform shadow-[inset_0_2px_4px_rgba(255,255,255,1)] font-black text-sm">
                       <Fuel size={18} className="mr-2" /> 尋找周邊加油站 (滿油還車)
                     </a>
                   )}
                   <a href={mapData.url} target="_blank" rel="noreferrer"
+                    onClick={() => showToast('即將跳轉至 Google Maps...')}
                     className={`w-full text-sm font-black py-4 rounded-[1.5rem] flex items-center justify-center transition-transform active:scale-95 shadow-[inset_0_4px_8px_rgba(255,255,255,0.9),0_4px_12px_rgba(0,0,0,0.05)] border
                       ${evt.type === 'transport' ? 'bg-indigo-50/90 text-indigo-700 border-indigo-200' : 'bg-white text-slate-800 border-white'}`}>
                     {evt.type === 'transport' ? <><Navigation size={18} className="mr-2" /> 開啟路線導航 <ArrowRight size={16} className="ml-1 opacity-70" /></> : <><MapPin size={18} className="mr-2" /> 查看定點地標</>}
@@ -666,14 +696,14 @@ function Itinerary() {
 }
 
 // ==========================================
-// 3. 憑證票夾 (Voucher Wallet) - 含 Canvas 圖片壓縮與 LocalStorage
+// 3. 憑證票夾 (Voucher Wallet) - 含 Canvas 圖片壓縮
 // ==========================================
-function VoucherWallet({ vouchers, setVouchers }) {
+function VoucherWallet({ vouchers, setVouchers, showToast }) {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState({ id: null, title: '', note: '', image: null });
 
-  // Canvas 圖片壓縮邏輯 (防止 LocalStorage 爆掉)
+  // Canvas 圖片壓縮邏輯 (加入縮放尺寸守衛 Math.min 防放大)
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -682,30 +712,35 @@ function VoucherWallet({ vouchers, setVouchers }) {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 800;
-        const scaleSize = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scaleSize;
+        const MAX_DIM = 800;
+        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        // 壓縮成 JPG 品質 0.7，大幅減小體積
+        // 壓縮成 JPG 品質 0.7
         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-        setForm({...form, image: dataUrl});
+        // functional update 防閉包陷阱
+        setForm(prev => ({...prev, image: dataUrl}));
       };
       img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!form.title) return;
     const newVoucher = { id: Date.now(), title: form.title, note: form.note || '已上傳', date: '剛上傳', image: form.image };
-    setVouchers([newVoucher, ...vouchers]);
-    setIsFormOpen(false); setForm({ id: null, title: '', note: '', image: null });
+    setVouchers(prev => [newVoucher, ...prev]);
+    setIsFormOpen(false); 
+    setForm({ id: null, title: '', note: '', image: null });
+    showToast('票券已儲存至本機快取');
   };
 
-  const handleDelete = (e, id) => { e.stopPropagation(); setVouchers(vouchers.filter(v => v.id !== id)); };
+  const handleDelete = (e, id) => { 
+    e.stopPropagation(); 
+    setVouchers(prev => prev.filter(v => v.id !== id)); 
+  };
 
   return (
     <div className="p-5 pt-8 space-y-6 relative z-10">
@@ -715,15 +750,15 @@ function VoucherWallet({ vouchers, setVouchers }) {
             <span className="flex items-center text-lg"><Plus size={20} className="mr-2 text-indigo-600" /> 新增憑證</span>
             <button type="button" onClick={() => setIsFormOpen(false)} className="text-xs bg-white/90 shadow-sm text-slate-600 font-bold px-4 py-2 rounded-xl active:scale-95 transition-all tension-morph">取消</button>
           </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input type="text" placeholder="標題 (例: 機票)*" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full bg-white/80 text-base font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
-            <input type="text" placeholder="備註 (例: 航廈 1)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} className="w-full bg-white/80 text-sm font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
+          <div className="space-y-4">
+            <input type="text" placeholder="標題 (例: 機票)*" value={form.title} onChange={e => setForm(prev => ({...prev, title: e.target.value}))} className="w-full bg-white/80 text-base font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
+            <input type="text" placeholder="備註 (例: 航廈 1)" value={form.note} onChange={e => setForm(prev => ({...prev, note: e.target.value}))} className="w-full bg-white/80 text-sm font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
             <div className="border-2 border-dashed border-indigo-300/80 rounded-[1.5rem] p-4 text-center bg-white/50 hover:bg-white/80 transition-all relative shadow-[inset_0_4px_10px_rgba(255,255,255,0.9)] overflow-hidden">
               {form.image ? <img src={form.image} alt="Preview" className="mx-auto h-28 object-contain rounded-xl drop-shadow-md" /> : <div className="text-sm font-black text-indigo-500 py-6">點擊上傳截圖 (自動壓縮防爆掉)</div>}
               <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
-            <LiquidRippleNode onClick={handleSubmit} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-[1.5rem] text-center shadow-[0_10px_20px_rgba(99,102,241,0.3),inset_0_4px_10px_rgba(255,255,255,0.4)] mt-2">儲存至本機</LiquidRippleNode>
-          </form>
+            <LiquidRippleNode onClick={handleSubmit} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-[1.5rem] text-center shadow-[0_10px_20px_rgba(99,102,241,0.3),inset_0_4px_10px_rgba(255,255,255,0.4)] mt-2 cursor-pointer">儲存至本機</LiquidRippleNode>
+          </div>
         </div>
       ) : (
         <LiquidRippleNode onClick={() => setIsFormOpen(true)} className="w-full liquid-panel p-6 flex flex-col items-center justify-center gap-3 hover:subsurface-glow group bubble-element hardware-accelerated">
@@ -735,21 +770,29 @@ function VoucherWallet({ vouchers, setVouchers }) {
       <div>
         <h3 className="font-black text-slate-800 mb-4 px-2 drop-shadow-sm text-lg">離線票夾</h3>
         <div className="space-y-4">
-          {vouchers.map((v, idx) => (
-            <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group hardware-accelerated" style={{ animationDelay: `${idx * 50}ms` }}>
-              <div className="w-4 h-[90%] absolute left-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.5)]"></div>
-              <div className="p-4 pl-8 flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="font-black text-slate-800 text-base truncate">{v.title}</h4>
-                  <div className="bg-white/90 p-2 rounded-xl text-indigo-600 shadow-[inset_0_2px_4px_rgba(255,255,255,1)]"><QrCode size={18} /></div>
+          {vouchers.length === 0 ? (
+            <div className="liquid-panel p-8 flex flex-col items-center text-center gap-3 bubble-element hardware-accelerated">
+              <Ticket size={36} className="text-slate-300" />
+              <p className="font-black text-slate-500 text-sm">票夾目前是空的</p>
+              <p className="text-xs text-slate-400">點擊上方按鈕新增旅行電子憑證</p>
+            </div>
+          ) : (
+            vouchers.map((v, idx) => (
+              <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group hardware-accelerated" style={{ animationDelay: `${idx * 50}ms` }}>
+                <div className="w-4 h-[90%] absolute left-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.5)]"></div>
+                <div className="p-4 pl-8 flex-1">
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className="font-black text-slate-800 text-base truncate">{v.title}</h4>
+                    <div className="bg-white/90 p-2 rounded-xl text-indigo-600 shadow-[inset_0_2px_4px_rgba(255,255,255,1)]"><QrCode size={18} /></div>
+                  </div>
+                  <div className="flex justify-between items-end">
+                    <p className="text-xs text-slate-500 font-bold">{v.note}</p>
+                    <button type="button" onClick={(e) => handleDelete(e, v.id)} className="p-2 bg-white/80 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-sm"><Trash2 size={16}/></button>
+                  </div>
                 </div>
-                <div className="flex justify-between items-end">
-                  <p className="text-xs text-slate-500 font-bold">{v.note}</p>
-                  <button type="button" onClick={(e) => handleDelete(e, v.id)} className="p-2 bg-white/80 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-sm"><Trash2 size={16}/></button>
-                </div>
-              </div>
-            </LiquidRippleNode>
-          ))}
+              </LiquidRippleNode>
+            ))
+          )}
         </div>
       </div>
 
@@ -775,7 +818,7 @@ function VoucherWallet({ vouchers, setVouchers }) {
                 </div>
               )}
               <div className="flex items-center justify-center text-emerald-700 font-black text-sm bg-emerald-50/90 py-4 rounded-[1.5rem] border border-emerald-200 shadow-[inset_0_2px_4px_rgba(255,255,255,1)]">
-                <CheckCircle size={20} className="mr-2" /> 離線快取驗證通過
+                <CheckCircle size={20} className="mr-2" /> 離線快取讀取成功
               </div>
             </div>
           </div>

@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Home, Map as MapIcon, Ticket, ShieldAlert,
   Plus, Plane, Car, Coffee, ShoppingBag, Bed, Activity,
-  ChevronDown, CloudSun, FileText, MapPin, 
-  Edit2, Trash2, X, QrCode, CheckCircle, Upload, Navigation, ArrowRight, ImagePlus,
+  ChevronDown, CloudSun, MapPin, 
+  Trash2, X, QrCode, CheckCircle, Upload, Navigation, ArrowRight,
   CircleParking, Fuel, PlaneTakeoff, PlaneLanding, RefreshCw, Calculator, PhoneCall, Wifi, WifiOff, Clock
 } from 'lucide-react';
 
@@ -110,47 +110,58 @@ const PROCESSED_ITINERARY = ITINERARY_DATA.map(dayData => {
   return { ...dayData, events };
 });
 
-// --- 🌟 柔和環境粒子 ---
-const AmbientBackground = () => {
-  const particles = useMemo(() => Array.from({ length: 15 }).map((_, i) => {
-    const size = Math.random() * 60 + 20;
-    return {
-      id: i,
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      size: `${size}px`,
-      duration: `${Math.random() * 20 + 20}s`,
-      delay: `${Math.random() * 5}s`,
-      tx: `${(Math.random() - 0.5) * 150}px`,
-      ty: `${(Math.random() - 1) * 200}px`, 
-    };
-  }), []);
+// --- 🌟 觸覺漣漪視覺化 (Haptic Ripple Component) ---
+const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
+  const [ripples, setRipples] = useState([]);
+  const wrapperRef = useRef(null);
+
+  const handleClick = (e) => {
+    const rect = wrapperRef.current.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.clientX - rect.left - size / 2;
+    const y = e.clientY - rect.top - size / 2;
+    
+    const newRipple = { id: Date.now(), x, y, size };
+    setRipples((prev) => [...prev, newRipple]);
+
+    if (navigator.vibrate) navigator.vibrate(10);
+    if (onClick) onClick(e);
+  };
+
+  const handleAnimationEnd = (id) => {
+    setRipples((prev) => prev.filter((r) => r.id !== id));
+  };
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-40">
-      {particles.map(p => (
-        <div key={p.id} className="absolute rounded-full will-change-transform" style={{
-          left: p.left, top: p.top, width: p.size, height: p.size,
-          background: 'radial-gradient(circle, rgba(199,210,254,0.4) 0%, rgba(199,210,254,0) 70%)',
-          animation: `ambientDrift ${p.duration} ease-in-out infinite alternate`,
-          animationDelay: p.delay,
-          '--tx': p.tx, '--ty': p.ty
-        }} />
+    <div 
+      ref={wrapperRef} 
+      onClick={handleClick} 
+      className={`relative overflow-hidden ${className} tension-morph`} 
+      {...props}
+    >
+      {children}
+      {ripples.map((r) => (
+        <span
+          key={r.id}
+          onAnimationEnd={() => handleAnimationEnd(r.id)}
+          className="absolute rounded-full bg-white/40 mix-blend-overlay pointer-events-none animate-ripple"
+          style={{ width: r.size, height: r.size, left: r.x, top: r.y }}
+        />
       ))}
     </div>
   );
 };
 
-const Toast = ({ message, visible }) => {
-  if (!visible) return null;
-  return (
-    <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max bg-slate-800 text-white px-5 py-3 rounded-full shadow-2xl font-bold text-sm flex items-center animate-in fade-in slide-in-from-top-4 duration-300">
-      <CheckCircle size={18} className="mr-2 text-emerald-400" />
-      {message}
-    </div>
-  );
-};
+// --- 🌟 全息環境粒子背景 (調降透明度以凸顯前景字體) ---
+const AmbientBackground = () => (
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5]">
+    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/40 to-blue-200/40 blur-[120px] animate-pulse mix-blend-multiply" style={{animationDuration: '10s'}} />
+    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/40 to-emerald-200/30 blur-[140px] animate-pulse mix-blend-multiply" style={{animationDuration: '14s', animationDelay: '2s'}} />
+    <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply" style={{animationDuration: '12s', animationDelay: '4s'}} />
+  </div>
+);
 
+// --- 🌟 全域 App 進入點 ---
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isOffline, setIsOffline] = useState(false); 
@@ -167,81 +178,146 @@ export default function App() {
   ]);
 
   useEffect(() => {
-    // 將所有動畫樣式統一至 global CSS 中，避免 JSX 中撰寫 style tag 出錯
     const style = document.createElement('style');
     style.innerHTML = `
-      /* 確保外層不影響 Sticky 的運作 */
-      html, body { overflow-x: hidden; }
-
-      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-      .animate-float { animation: float 4s ease-in-out infinite; }
-      
-      @keyframes slideUpFade { 0% { opacity: 0; transform: translateY(30px) scale(0.98); } 100% { opacity: 1; transform: translateY(0) scale(1); } }
-      .stagger-item { opacity: 0; animation: slideUpFade 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-      
-      /* 修正點：將 100% 時的 filter: blur(0) 改為 filter: none，避免破壞內部 fixed / sticky 元素的定位基準 */
-      @keyframes pageEnter { from { opacity: 0; filter: blur(2px); } to { opacity: 1; filter: none; transform: none; } }
-      .page-transition { animation: pageEnter 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-
-      @keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-      .animate-bg-shift { background-size: 200% 200%; animation: gradientShift 10s ease infinite; }
-
-      @keyframes ambientDrift { 0% { transform: translate(0, 0) scale(0.8); } 100% { transform: translate(var(--tx), var(--ty)) scale(1.2); } }
-      
-      @keyframes modalPop { 0% { opacity: 0; transform: scale(0.95) translateY(20px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
-      .modal-animate { animation: modalPop 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-      
-      /* 模擬掃描線 */
-      @keyframes scanEffect { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-      .scan-line { animation: scanEffect 2s ease-in-out infinite; }
-      
-      /* 隱藏原生捲軸，讓介面更像 App */
+      html, body { 
+        overflow-x: hidden; 
+        scroll-behavior: smooth; 
+        overscroll-behavior-y: none; 
+        background: #E8EEF5;
+      }
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+      /* 加厚液態玻璃基底，提升文字對比 */
+      .liquid-panel {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%);
+        backdrop-filter: blur(28px) saturate(200%);
+        -webkit-backdrop-filter: blur(28px) saturate(200%);
+        border: 1px solid rgba(255, 255, 255, 0.9);
+        border-radius: 2.5rem; 
+        box-shadow: 
+          inset 0px 8px 16px -4px rgba(255, 255, 255, 1),
+          inset 0px -6px 12px -4px rgba(0, 0, 0, 0.02),
+          0 12px 32px rgba(31, 38, 135, 0.08);
+      }
+
+      .chromatic-edge { position: relative; }
+      .chromatic-edge::before {
+        content: ''; position: absolute; inset: -1px; border-radius: inherit; z-index: -1;
+        background: linear-gradient(135deg, rgba(255,0,80,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,200,255,0.1) 100%);
+        box-shadow: -2px 0 6px rgba(255, 0, 80, 0.05), 2px 0 6px rgba(0, 200, 255, 0.05);
+        pointer-events: none;
+      }
+
+      .tension-morph {
+        transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease, border-radius 0.6s ease;
+        transform-origin: center;
+      }
+      .tension-morph:active {
+        transform: scale(0.94);
+        border-radius: 3rem; 
+        box-shadow: inset 0px 4px 8px rgba(255, 255, 255, 1), 0 4px 12px rgba(31, 38, 135, 0.03); 
+      }
+
+      .subsurface-glow {
+        box-shadow: 
+          inset 0 0 20px rgba(99, 102, 241, 0.2), 
+          inset 0 8px 16px rgba(255, 255, 255, 1),
+          0 16px 32px rgba(99, 102, 241, 0.15) !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-color: rgba(99, 102, 241, 0.3) !important;
+      }
+
+      .holo-sheen { position: relative; overflow: hidden; }
+      .holo-sheen::after {
+        content: ''; position: absolute; inset: -100%;
+        background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.4) 40%, rgba(255,230,255,0.2) 45%, transparent 60%);
+        background-size: 200% 200%;
+        animation: holoReflect 5s infinite linear;
+        pointer-events: none; mix-blend-mode: overlay;
+      }
+      @keyframes holoReflect { 0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); } 100% { transform: translateX(50%) translateY(50%) rotate(360deg); } }
+
+      @keyframes bubbleEnter {
+        0% { opacity: 0; filter: blur(10px); transform: scale(0.8) translateY(20px); }
+        60% { transform: scale(1.02) translateY(-2px); filter: blur(0px); }
+        100% { opacity: 1; filter: blur(0px); transform: scale(1) translateY(0); }
+      }
+      .bubble-element { animation: bubbleEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+
+      .gradient-frosted {
+        background: linear-gradient(to bottom, rgba(255,255,255,0.9), rgba(255,255,255,0.6));
+        backdrop-filter: blur(30px) saturate(200%);
+        -webkit-backdrop-filter: blur(30px) saturate(200%);
+        -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+        mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+      }
+      
+      .nav-frosted {
+        background: linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0.7));
+        backdrop-filter: blur(40px) saturate(250%);
+        -webkit-backdrop-filter: blur(40px) saturate(250%);
+        border-top: 1px solid rgba(255, 255, 255, 1);
+      }
+
+      @keyframes rippleEffect {
+        0% { transform: scale(0); opacity: 0.8; }
+        100% { transform: scale(3); opacity: 0; }
+      }
+      .animate-ripple { animation: rippleEffect 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     `;
     document.head.appendChild(style);
     return () => document.head.removeChild(style);
   }, []);
 
-  const NavButton = ({ id, icon: Icon, label }) => (
-    <button 
-      type="button"
-      onClick={() => setActiveTab(id)}
-      className={`flex flex-col items-center justify-center w-full py-3 space-y-1 transition-all duration-300 active:scale-95
-        ${activeTab === id ? 'text-indigo-600 drop-shadow-sm' : 'text-slate-400 hover:text-indigo-400'}`}
-    >
-      <div className={`transition-all duration-500 ease-out ${activeTab === id ? '-translate-y-1.5 scale-110 drop-shadow-md' : ''}`}>
-        <Icon size={24} />
-      </div>
-      <span className={`text-[10px] font-bold transition-all duration-300 ${activeTab === id ? 'opacity-100' : 'opacity-80'}`}>{label}</span>
-    </button>
-  );
+  const NavButton = ({ id, icon: Icon, label }) => {
+    const isActive = activeTab === id;
+    return (
+      <LiquidRippleNode 
+        onClick={() => setActiveTab(id)}
+        className="relative flex flex-col items-center justify-center w-full py-4 space-y-1 group cursor-pointer"
+      >
+        {isActive && (
+          <div className="absolute inset-0 bg-indigo-50/80 rounded-[2.5rem] bubble-element -z-10 shadow-[inset_0_4px_10px_rgba(255,255,255,1)] border border-indigo-100"></div>
+        )}
+        <div className={`transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
+          <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
+        </div>
+        {/* 加深並微調放大導航列文字 */}
+        <span className={`text-[11px] font-extrabold transition-all duration-300 ${isActive ? 'opacity-100 text-indigo-700' : 'opacity-80 text-slate-500'}`}>{label}</span>
+      </LiquidRippleNode>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 bg-[#F8FAFC] text-slate-800 font-sans selection:bg-indigo-100 overflow-hidden flex flex-col items-center">
+    <div className="fixed inset-0 text-slate-800 font-sans selection:bg-indigo-100 overflow-hidden flex flex-col items-center">
       <AmbientBackground />
-      <Toast message={toastMsg.text} visible={toastMsg.visible} />
+      {toastMsg.visible && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center bubble-element text-indigo-900 border-white shadow-xl">
+          <CheckCircle size={18} className="mr-2 text-emerald-500" /> {toastMsg.text}
+        </div>
+      )}
 
-      <main key={activeTab} className="page-transition w-full max-w-md relative z-10 flex-1 overflow-y-auto scrollbar-hide pb-28">
+      <main key={activeTab} className="w-full max-w-md relative z-10 flex-1 overflow-y-auto scrollbar-hide pb-32 pt-safe bubble-element">
         {isOffline && (
-          <div className="bg-slate-800 text-white text-xs font-bold py-1.5 flex items-center justify-center animate-in slide-in-from-top-2 sticky top-0 z-[100]">
-            <WifiOff size={14} className="mr-2 text-rose-400" /> 目前處於離線就緒模式 (PWA Cache)
+          <div className="bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center sticky top-0 z-[100] shadow-md">
+            <WifiOff size={14} className="mr-2 animate-pulse" /> 離線就緒模式 (本地快取運作中)
           </div>
         )}
 
-        {activeTab === 'dashboard' && (
-          <Dashboard exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isOffline={isOffline} />
-        )}
+        {activeTab === 'dashboard' && <Dashboard exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isOffline={isOffline} />}
         {activeTab === 'itinerary' && <Itinerary showToast={showToast} />}
         {activeTab === 'vouchers' && <VoucherWallet vouchers={vouchers} setVouchers={setVouchers} />}
         {activeTab === 'emergency' && <EmergencyKit isOffline={isOffline} setIsOffline={setIsOffline} />}
       </main>
 
-      <nav className="fixed bottom-0 w-full bg-white/80 backdrop-blur-xl border-t border-slate-200/60 flex justify-around items-center max-w-md left-1/2 -translate-x-1/2 z-50 pb-2 shadow-[0_-10px_40px_rgba(0,0,0,0.08)] rounded-t-3xl">
-        <NavButton id="dashboard" icon={Home} label="動態總覽" />
-        <NavButton id="itinerary" icon={MapIcon} label="行程嚮導" />
-        <NavButton id="vouchers" icon={Ticket} label="電子憑證" />
-        <NavButton id="emergency" icon={ShieldAlert} label="危機應變" />
+      {/* 底部導航：改用絕對置中 (left-0 right-0 mx-auto)，避免 transform 造成的偏移 */}
+      <nav className="fixed bottom-6 left-0 right-0 mx-auto w-[92%] max-w-md z-50 nav-frosted rounded-[3rem] shadow-[0_20px_40px_rgba(31,38,135,0.15),inset_0_4px_10px_rgba(255,255,255,1)] flex justify-around items-center px-2 py-1 border border-white chromatic-edge">
+        <NavButton id="dashboard" icon={Home} label="動態" />
+        <NavButton id="itinerary" icon={MapIcon} label="行程" />
+        <NavButton id="vouchers" icon={Ticket} label="票夾" />
+        <NavButton id="emergency" icon={ShieldAlert} label="應變" />
       </nav>
     </div>
   );
@@ -253,33 +329,25 @@ export default function App() {
 function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
   const [jpyInput, setJpyInput] = useState('');
   const [showReturnFlight, setShowReturnFlight] = useState(false);
-  const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-400 to-blue-500' });
+  const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
   const [isRateLive, setIsRateLive] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => setMounted(true), []);
-
-  // 🌤️ 串接即時氣象與匯率 API
   useEffect(() => {
     if (!isOffline) {
-      // 氣象 API
       fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current_weather=true')
         .then(res => res.json())
         .then(data => {
           if (data && data.current_weather) {
             const temp = Math.round(data.current_weather.temperature);
             const code = data.current_weather.weathercode;
-            let desc = '晴朗';
-            let color = 'from-sky-400 to-blue-500';
-            if (code >= 1 && code <= 3) { desc = '多雲'; color = 'from-indigo-400 to-indigo-600'; }
-            if (code >= 51 && code <= 67) { desc = '雨天'; color = 'from-slate-500 to-slate-700'; }
-            if (code >= 71 && code <= 99) { desc = '雷陣雨'; color = 'from-slate-600 to-slate-800'; }
+            let desc = '晴朗'; let color = 'from-sky-500/80 to-blue-600/80';
+            if (code >= 1 && code <= 3) { desc = '多雲'; color = 'from-indigo-500/80 to-indigo-700/80'; }
+            if (code >= 51 && code <= 67) { desc = '雨天'; color = 'from-slate-600/80 to-slate-800/80'; }
+            if (code >= 71 && code <= 99) { desc = '雷陣雨'; color = 'from-slate-700/80 to-slate-900/80'; }
             setWeather({ temp: `${temp}°`, desc, color });
           }
-        })
-        .catch(() => setWeather({ temp: '--', desc: '無法取得', color: 'from-slate-400 to-slate-500' }));
+        }).catch(() => setWeather({ temp: '--', desc: '無法取得', color: 'from-slate-500/80 to-slate-600/80' }));
         
-      // 匯率 API (擷取 JPY 對 TWD 的即時開源數據)
       fetch('https://open.er-api.com/v6/latest/JPY')
         .then(res => res.json())
         .then(data => {
@@ -287,148 +355,129 @@ function Dashboard({ exchangeRate, setExchangeRate, isOffline }) {
             setExchangeRate(Number(data.rates.TWD.toFixed(4)));
             setIsRateLive(true);
           }
-        })
-        .catch(() => setIsRateLive(false));
+        }).catch(() => setIsRateLive(false));
     }
   }, [isOffline, setExchangeRate]);
 
-  // 自動判斷回程航班顯示
-  const isReturnFlightDefault = new Date().getTime() > new Date(TRIP_YEAR, 7, 20).getTime();
-  useEffect(() => setShowReturnFlight(isReturnFlightDefault), [isReturnFlightDefault]);
-
   return (
-    <div className="pb-6 relative z-10">
-      <header className="animate-bg-shift bg-gradient-to-br from-sky-400 via-indigo-500 to-purple-500 shadow-lg px-5 py-7 mb-6 rounded-b-3xl flex items-center justify-between relative overflow-hidden">
-        <div className="absolute top-0 right-0 opacity-10 transform translate-x-4 -translate-y-4">
-          <Plane size={100} className="rotate-[-20deg]" />
+    <div className="pb-6 relative z-10 px-5 pt-8 space-y-6">
+      
+      {/* 標題區 */}
+      <div className="flex items-end justify-between px-2 mb-2 bubble-element" style={{animationDelay: '50ms'}}>
+        <div>
+          <h1 className="text-4xl font-black tracking-tight text-slate-800 drop-shadow-md">OkiTrack</h1>
+          <p className="text-sm font-extrabold tracking-wide text-indigo-700 mt-1">iOS 27 Liquid Glass Edition</p>
         </div>
-        <div className="text-white relative z-10">
-          <h1 className="text-2xl font-black tracking-tight drop-shadow-md">OkiTrack</h1>
-          <p className="text-xs text-sky-100 font-bold tracking-wide mt-0.5">自駕生存嚮導</p>
+        <div className="w-12 h-12 rounded-[1.5rem] bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-[inset_0_4px_10px_rgba(255,255,255,1),0_10px_20px_rgba(99,102,241,0.2)] relative overflow-hidden holo-sheen chromatic-edge tension-morph border border-white">
+          <Plane size={24} className="-rotate-45 drop-shadow-md" />
         </div>
-      </header>
+      </div>
 
-      <div className="px-5 space-y-6">
-        <div className={`bg-gradient-to-r ${isOffline ? 'from-slate-400 to-slate-500' : weather.color} rounded-3xl p-6 text-white shadow-md flex items-center justify-between transition-all duration-500 hover:shadow-lg`}>
+      {/* 天氣卡片 - 加強文字陰影確保清晰 */}
+      <div className={`liquid-panel chromatic-edge holo-sheen p-6 text-white bubble-element relative overflow-hidden bg-gradient-to-br ${isOffline ? 'from-slate-500/80 to-slate-600/80' : weather.color}`} style={{animationDelay: '100ms'}}>
+        <div className="flex items-center justify-between relative z-10">
           <div>
-            <h3 className="font-bold text-lg drop-shadow-sm flex items-center">
-              沖繩 那霸市 <RefreshCw size={14} className={`ml-2 opacity-50 ${isOffline ? 'hidden' : 'animate-spin'}`} style={{ animationDuration: '3s' }} />
+            <h3 className="font-black text-lg drop-shadow-lg flex items-center">
+              沖繩 那霸市 <RefreshCw size={14} className={`ml-2 opacity-90 ${isOffline ? 'hidden' : 'animate-spin'}`} style={{ animationDuration: '4s' }} />
             </h3>
-            <p className="text-white/80 text-xs font-bold mt-1">
-              {isOffline ? '離線模式 (無即時資料)' : `今日即時預報：${weather.desc}`}
+            <p className="text-white text-sm font-bold mt-1 drop-shadow-md">
+              {isOffline ? '離線快取資料' : `今日預報：${weather.desc}`}
             </p>
           </div>
-          <div className="flex items-center space-x-3 animate-float">
-            <CloudSun size={40} className={isOffline ? 'text-slate-300 opacity-50' : 'text-white drop-shadow-md'} />
-            <span className="text-4xl font-black drop-shadow-sm">{isOffline ? '--' : weather.temp}</span>
+          <div className="flex items-center space-x-3 drop-shadow-2xl">
+            <CloudSun size={48} className={isOffline ? 'text-slate-200/60' : 'text-white'} />
+            <span className="text-5xl font-black tracking-tighter text-shadow-xl">{isOffline ? '--' : weather.temp}</span>
           </div>
         </div>
-
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-100 stagger-item" style={{ animationDelay: '50ms' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-extrabold text-slate-800 flex items-center">
-              {showReturnFlight ? <PlaneTakeoff size={18} className="mr-2 text-indigo-500" /> : <PlaneLanding size={18} className="mr-2 text-indigo-500" />} 
-              航班追蹤
-            </h3>
-            <button type="button" onClick={() => setShowReturnFlight(!showReturnFlight)} className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-3 py-1.5 rounded-lg active:scale-95 transition-all hover:bg-indigo-100">
-              切換{showReturnFlight ? '去程' : '回程'}
-            </button>
-          </div>
-          <div className="flex justify-between items-center bg-slate-50 rounded-2xl p-4 border border-slate-100">
-            <div className="text-center">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">{showReturnFlight ? 'OKA 那霸' : 'TPE 桃園'}</p>
-              <h4 className="text-2xl font-black text-slate-800">{showReturnFlight ? '08:10' : '09:20'}</h4>
-            </div>
-            <div className="flex flex-col items-center flex-1 px-4 relative">
-              <div className="w-full border-t-2 border-dashed border-slate-300 my-2 relative">
-                 <Plane size={16} className={`text-indigo-500 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 transition-transform duration-500 ${showReturnFlight ? '-rotate-12' : 'rotate-12'}`} />
-              </div>
-              <span className="text-[10px] font-bold text-slate-400 bg-white px-2 rounded-full border border-slate-100">{showReturnFlight ? '約 1h 40m' : '約 1h 30m'}</span>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">{showReturnFlight ? 'TPE 桃園' : 'OKA 那霸'}</p>
-              <h4 className="text-2xl font-black text-slate-800">{showReturnFlight ? '08:50' : '11:50'}</h4>
-            </div>
-          </div>
-          <div className="flex justify-between mt-4 text-sm font-bold">
-            <div className="flex flex-col items-center flex-1 border-r border-slate-100">
-              <span className="text-slate-400 text-xs mb-0.5">航班代號</span>
-              <span className="text-slate-700">{showReturnFlight ? 'MM921' : 'IT230'}</span>
-            </div>
-            <div className="flex flex-col items-center flex-1 border-r border-slate-100">
-              <span className="text-slate-400 text-xs mb-0.5">出發航廈</span>
-              <span className="text-slate-700">{showReturnFlight ? '國際線' : 'T1'}</span>
-            </div>
-            <div className="flex flex-col items-center flex-1">
-              <span className="text-slate-400 text-xs mb-0.5">狀態</span>
-              <span className="text-emerald-500">準點</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-100 stagger-item" style={{ animationDelay: '100ms' }}>
-          <h3 className="font-extrabold text-slate-800 mb-4 flex items-center justify-between">
-            <div className="flex items-center">
-              <Calculator size={18} className="mr-2 text-indigo-500" /> 即時匯率換算
-            </div>
-            <div className="text-xs font-bold text-slate-400 flex items-center bg-slate-50 px-2 py-1 rounded-lg relative overflow-hidden">
-              {isRateLive && (
-                <span className="flex h-2 w-2 relative mr-1.5" title="即時連線中">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-              )}
-              設定匯率：
-              <input type="number" step="0.001" value={exchangeRate} onChange={e => {
-                setExchangeRate(Number(e.target.value) || 0);
-                setIsRateLive(false); // 若手動修改，則關閉即時連線燈號
-              }} className="bg-transparent w-14 ml-1 outline-none text-indigo-600 font-black relative z-10" />
-            </div>
-          </h3>
-          <div className="flex items-center space-x-3">
-            <div className="flex-1 relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-black">¥</span>
-              <input 
-                type="number" placeholder="日圓 JPY" value={jpyInput} onChange={e => setJpyInput(e.target.value)}
-                className="w-full bg-slate-50 text-xl font-black text-slate-800 border border-slate-200 rounded-2xl p-4 pl-9 focus:ring-2 focus:ring-indigo-400 outline-none transition-all"
-              />
-            </div>
-            <ArrowRight size={20} className="text-slate-300 flex-shrink-0" />
-            <div className="flex-1 relative bg-indigo-50 rounded-2xl p-4 border border-indigo-100 flex items-center">
-              <span className="text-indigo-400 font-black mr-1">$</span>
-              <span className="text-xl font-black text-indigo-700 truncate">
-                {jpyInput ? Math.round((Number(jpyInput) || 0) * (exchangeRate || 0)).toLocaleString() : '0'}
-              </span>
-            </div>
-          </div>
-        </div>
-
       </div>
+
+      <LiquidRippleNode className="liquid-panel p-6 bubble-element group" style={{animationDelay: '150ms'}}>
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="font-extrabold text-slate-800 flex items-center text-lg">
+            {showReturnFlight ? <PlaneTakeoff size={20} className="mr-2 text-indigo-600" /> : <PlaneLanding size={20} className="mr-2 text-indigo-600" />} 
+            航班動態
+          </h3>
+          <button type="button" onClick={(e) => { e.stopPropagation(); setShowReturnFlight(!showReturnFlight); }} className="bg-white/90 backdrop-blur-md text-indigo-700 text-xs font-black px-4 py-2 rounded-xl transition-all shadow-[inset_0_2px_4px_rgba(255,255,255,1),0_2px_8px_rgba(0,0,0,0.08)] border border-white tension-morph">
+            切換{showReturnFlight ? '去程' : '回程'}
+          </button>
+        </div>
+        
+        <div className="flex justify-between items-center bg-white/60 rounded-[2rem] p-5 border border-white shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] relative overflow-hidden">
+          <div className="text-center relative z-10">
+            <p className="text-xs text-slate-500 font-extrabold uppercase tracking-wider mb-1">{showReturnFlight ? 'OKA 那霸' : 'TPE 桃園'}</p>
+            <h4 className="text-3xl font-black text-slate-800">{showReturnFlight ? '08:10' : '09:20'}</h4>
+          </div>
+          <div className="flex flex-col items-center flex-1 px-4 relative z-10">
+            <div className="w-full border-t-2 border-dashed border-indigo-300/80 my-2 relative">
+               <Plane size={20} className={`text-indigo-600 absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 transition-transform duration-700 cubic-bezier(0.34, 1.56, 0.64, 1) ${showReturnFlight ? '-rotate-12' : 'rotate-12'} drop-shadow-md`} />
+            </div>
+            <span className="text-[11px] font-black text-indigo-700 bg-indigo-50/90 backdrop-blur-sm px-3 py-1 rounded-full border border-indigo-100 shadow-sm">{showReturnFlight ? '約 1h 40m' : '約 1h 30m'}</span>
+          </div>
+          <div className="text-center relative z-10">
+            <p className="text-xs text-slate-500 font-extrabold uppercase tracking-wider mb-1">{showReturnFlight ? 'TPE 桃園' : 'OKA 那霸'}</p>
+            <h4 className="text-3xl font-black text-slate-800">{showReturnFlight ? '08:50' : '11:50'}</h4>
+          </div>
+        </div>
+      </LiquidRippleNode>
+
+      <div className="liquid-panel p-6 bubble-element" style={{animationDelay: '200ms'}}>
+        <h3 className="font-extrabold text-slate-800 mb-5 flex items-center justify-between text-lg">
+          <div className="flex items-center">
+            <Calculator size={20} className="mr-2 text-indigo-600" /> 即時匯率換算
+          </div>
+          <div className="text-xs font-bold text-slate-600 flex items-center bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-[1rem] border border-white shadow-[inset_0_2px_4px_rgba(255,255,255,1)]">
+            {isRateLive && (
+              <span className="flex h-2 w-2 relative mr-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            )}
+            匯率
+            <input type="number" step="0.001" value={exchangeRate} onChange={e => {
+              setExchangeRate(Number(e.target.value) || 0);
+              setIsRateLive(false);
+            }} className="bg-transparent w-14 ml-1 outline-none text-indigo-700 font-black text-right" />
+          </div>
+        </h3>
+        <div className="flex items-center space-x-3">
+          <div className="flex-1 relative tension-morph">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-black text-lg">¥</span>
+            <input 
+              type="number" placeholder="輸入日圓" value={jpyInput} onChange={e => setJpyInput(e.target.value)}
+              className="w-full bg-white/80 text-xl font-black text-slate-800 border border-white rounded-[2rem] p-4 pl-10 focus:ring-4 focus:ring-indigo-100 outline-none transition-all shadow-[inset_0_4px_8px_rgba(0,0,0,0.05)]"
+            />
+          </div>
+          <ArrowRight size={20} className="text-slate-400 flex-shrink-0" />
+          <div className="flex-1 relative bg-gradient-to-br from-indigo-500 to-purple-600 rounded-[2rem] p-4 border border-white/30 flex items-center shadow-[inset_0_4px_10px_rgba(255,255,255,0.4),0_10px_20px_rgba(99,102,241,0.25)] text-white">
+            <span className="text-indigo-200 font-black mr-1 text-lg">$</span>
+            <span className="text-2xl font-black truncate drop-shadow-md">
+              {jpyInput ? Math.round((Number(jpyInput) || 0) * (exchangeRate || 0)).toLocaleString() : '0'}
+            </span>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 }
 
 // ==========================================
-// 🌟 倒數計時小工具元件 (Countdown Banner)
+// 🌟 倒數計時小工具
 // ==========================================
 function CountdownBanner({ nextEvent }) {
   const [timeLeft, setTimeLeft] = useState('');
 
   useEffect(() => {
     if (!nextEvent || !nextEvent.timeObj) return;
-
     const timer = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = nextEvent.timeObj.getTime() - now;
-
+      const distance = nextEvent.timeObj.getTime() - new Date().getTime();
       if (distance < 0) {
-        setTimeLeft('即將開始或已結束');
+        setTimeLeft('進行中或已結束');
       } else {
         const d = Math.floor(distance / (1000 * 60 * 60 * 24));
         const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((distance % (1000 * 60)) / 1000);
-        
         let timeStr = '';
         if (d > 0) timeStr += `${d}天 `;
         if (h > 0 || d > 0) timeStr += `${h}時 `;
@@ -436,215 +485,148 @@ function CountdownBanner({ nextEvent }) {
         setTimeLeft(timeStr);
       }
     }, 1000);
-
     return () => clearInterval(timer);
   }, [nextEvent]);
 
   if (!nextEvent) return null;
 
   return (
-    <div className="bg-indigo-600 text-white text-xs font-bold py-2.5 px-4 flex items-center justify-center shadow-inner relative z-50">
-      <Clock size={14} className="mr-2 animate-pulse" />
-      前往 ({nextEvent.title}) 還剩：<span className="ml-1 text-amber-300 font-black">{timeLeft}</span>
+    <div className="bg-indigo-700/95 backdrop-blur-xl text-white text-xs font-bold py-3 px-4 flex items-center justify-center shadow-lg relative z-50">
+      <Clock size={16} className="mr-2 animate-pulse text-indigo-200" />
+      前往 <span className="mx-2 px-2.5 py-0.5 bg-white/20 rounded-full truncate max-w-[120px] shadow-inner font-extrabold">{nextEvent.title}</span> 剩餘：<span className="ml-1 text-amber-300 font-black">{timeLeft}</span>
     </div>
   );
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary)
+// 2. 行程嚮導與地圖 (Itinerary) 
 // ==========================================
-function Itinerary({ showToast }) {
+function Itinerary() {
   const [activeDay, setActiveDay] = useState(1);
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
 
-  // --- 🌟 智慧自動跳轉邏輯 ---
   useEffect(() => {
     const now = new Date();
     let foundNext = null;
-
     for (const dayData of PROCESSED_ITINERARY) {
       for (let i = 0; i < dayData.events.length; i++) {
         const evt = dayData.events[i];
         if (evt.timeObj && evt.timeObj.getTime() > now.getTime()) {
-          foundNext = { day: dayData.day, index: i, ...evt };
-          break;
+          foundNext = { day: dayData.day, index: i, ...evt }; break;
         }
       }
       if (foundNext) break;
     }
-
     if (foundNext) {
-      setNextUpcomingEvent(foundNext);
-      setActiveDay(foundNext.day);
-      setActiveEventIndex(foundNext.index);
-      
-      // 自動滾動，扣除頂部 Sticky 區塊的高度 (大約 300px)
-      setTimeout(() => {
-        const el = document.getElementById(`event-${foundNext.day}-${foundNext.index}`);
-        if (el) {
-          const y = el.getBoundingClientRect().top + window.scrollY - 300;
-          window.scrollTo({ top: y, behavior: 'smooth' });
-        }
-      }, 500); 
+      setNextUpcomingEvent(foundNext); setActiveDay(foundNext.day); setActiveEventIndex(foundNext.index);
     }
   }, []);
 
   const rawDayIndex = PROCESSED_ITINERARY.findIndex(d => d.day === activeDay);
   const safeDayIndex = Math.max(0, rawDayIndex);
   const events = PROCESSED_ITINERARY[safeDayIndex]?.events || [];
-  
   const safeIndex = (activeEventIndex >= 0 && activeEventIndex < events.length) ? activeEventIndex : 0;
-  const activeEvent = events[safeIndex] || {};
-  const activeMapQuery = activeEvent.mapQuery || activeEvent.title || 'Okinawa';
-
-  const getMapData = (dayIdx, evtIdx) => {
-    const sDayIdx = Math.max(0, dayIdx);
-    const evtList = PROCESSED_ITINERARY[sDayIdx]?.events || [];
-    const sEvtIdx = (evtIdx >= 0 && evtIdx < evtList.length) ? evtIdx : 0;
-    
-    const evt = evtList[sEvtIdx] || {};
-    const destination = evt.mapQuery || evt.title || '';
-    const isTransport = evt.type === 'transport';
-
-    let url = '';
-    if (isTransport) {
-      let origin = '';
-      if (sEvtIdx > 0) {
-        origin = evtList[sEvtIdx - 1].mapQuery || evtList[sEvtIdx - 1].title;
-      } else if (sDayIdx > 0) {
-        const prevDayEvents = PROCESSED_ITINERARY[sDayIdx - 1].events || [];
-        if (prevDayEvents.length > 0) {
-          origin = prevDayEvents[prevDayEvents.length - 1].mapQuery || prevDayEvents[prevDayEvents.length - 1].title;
-        }
-      }
-      url = origin ? `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(destination)}` 
-                   : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
-    } else {
-      url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(destination)}`;
-    }
-    return { isTransport, url };
-  };
+  const activeMapQuery = events[safeIndex]?.mapQuery || events[safeIndex]?.title || 'Okinawa';
 
   return (
     <div className="relative">
-      
-      {/* 📌 地圖絕對固定區塊：改用 sticky 確保它永遠在畫面上方，且不受父層動畫影響 */}
-      <div className="sticky top-0 w-full z-40 bg-[#F8FAFC] shadow-md border-b border-slate-200">
+      <div className="sticky top-0 w-full z-40 gradient-frosted pb-2 shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60">
         <CountdownBanner nextEvent={nextUpcomingEvent} />
 
-        <div className="w-full h-48 bg-slate-200 relative flex-shrink-0">
+        <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom">
           <iframe
-            title="Google Map"
-            width="100%"
-            height="100%"
-            style={{ border: 0 }}
-            loading="lazy"
-            allowFullScreen
+            title="Google Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
             src={`https://maps.google.com/maps?q=${encodeURIComponent(activeMapQuery)}&t=&z=14&ie=UTF8&iwloc=&output=embed`}
           ></iframe>
+          <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,1)] pointer-events-none"></div>
         </div>
 
-        <div className="bg-white/95 backdrop-blur-xl px-3 py-3 flex space-x-3 overflow-x-auto scrollbar-hide shadow-sm flex-shrink-0">
-          {PROCESSED_ITINERARY.map((data) => (
-            <button
-              key={data.day}
-              type="button"
-              onClick={() => { setActiveDay(data.day); setActiveEventIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-              className={`flex-shrink-0 px-4 py-2.5 rounded-2xl flex flex-col items-center min-w-[75px] transition-all duration-500 ease-out active:scale-95
-                ${activeDay === data.day ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-105' : 'bg-slate-50 text-slate-400 border border-slate-100 hover:bg-slate-100'}`}
-            >
-              <span className="text-[9px] font-black uppercase mb-0.5 opacity-80 tracking-widest">Day {data.day}</span>
-              <span className="text-xs font-black">{data.date}</span>
-            </button>
-          ))}
+        <div className="px-4 py-3 flex space-x-3 overflow-x-auto scrollbar-hide">
+          {PROCESSED_ITINERARY.map((data) => {
+            const isActive = activeDay === data.day;
+            return (
+              <LiquidRippleNode
+                key={data.day} 
+                onClick={() => { setActiveDay(data.day); setActiveEventIndex(0); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white
+                  ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
+              >
+                <span className={`text-[11px] font-black uppercase mb-0.5 tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>Day {data.day}</span>
+                <span className={`text-sm font-black ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>{data.date}</span>
+              </LiquidRippleNode>
+            )
+          })}
         </div>
       </div>
 
-      {/* 📜 行程清單 (由於上方改為 sticky，拿掉原本手動推擠的 pt-[320px]，恢復正常自然排版) */}
-      <div className="p-4 space-y-4 pb-10 relative z-10">
-        <div className="mb-2 px-2 flex items-center justify-between">
-           <h2 className="text-lg font-black text-indigo-900 flex items-center">
-             <MapPin size={20} className="mr-2 text-rose-500" /> {PROCESSED_ITINERARY[safeDayIndex]?.region}
+      <div className="p-5 space-y-5 pb-10 relative z-10">
+        <div className="mb-2 px-2 bubble-element">
+           <h2 className="text-xl font-black text-slate-800 flex items-center drop-shadow-sm">
+             <MapPin size={22} className="mr-2 text-rose-500 drop-shadow-md" /> {PROCESSED_ITINERARY[safeDayIndex]?.region}
            </h2>
         </div>
 
         {events.map((evt, idx) => {
           const isActive = safeIndex === idx;
-          const mapData = getMapData(safeDayIndex, idx);
+          const mapData = {
+             url: evt.type === 'transport' 
+              ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title)}`
+              : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title)}`
+          };
 
           return (
-            <div 
-              id={`event-${activeDay}-${idx}`}
-              key={`day-${activeDay}-event-${idx}`} 
-              onClick={() => setActiveEventIndex(idx)}
-              className={`stagger-item bg-white/90 backdrop-blur-sm rounded-3xl p-4 transition-all duration-500 ease-out cursor-pointer border
-                ${isActive ? 'border-indigo-400 shadow-lg ring-4 ring-indigo-50 scale-[1.01]' : 'border-slate-100 shadow-sm hover:-translate-y-1 hover:border-indigo-200 hover:shadow-md active:scale-[0.98]'}`}
-              style={{ animationDelay: `${idx * 50}ms` }}
+            <LiquidRippleNode 
+              key={idx} onClick={() => setActiveEventIndex(idx)}
+              className={`liquid-panel p-5 cursor-pointer bubble-element
+                ${isActive ? 'subsurface-glow scale-[1.02] ring-2 ring-indigo-300 z-20' : 'opacity-95 scale-[0.98] blur-[0.2px] z-10 bg-white/70'}`}
+              style={{ animationDelay: `${idx * 40}ms` }}
             >
               <div className="flex items-start">
-                <div className={`p-2.5 rounded-2xl mr-3 mt-1 shadow-inner border flex-shrink-0 transition-colors duration-500
-                  ${isActive ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-400 border-slate-100'}`}>
-                  <evt.icon size={20} />
+                <div className={`p-3.5 rounded-[1.5rem] mr-4 shadow-[inset_0_4px_8px_rgba(255,255,255,0.8)] border flex-shrink-0 transition-colors duration-500 tension-morph
+                  ${isActive ? 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-transparent shadow-[0_8px_16px_rgba(99,102,241,0.3)]' : 'bg-white/90 text-slate-500 border-white'}`}>
+                  <evt.icon size={22} />
                 </div>
-                <div className="flex-1">
-                  <div className={`text-[10px] font-black tracking-wider mb-1 transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-400'}`}>{evt.time}</div>
-                  <h3 className={`font-bold leading-snug transition-colors ${isActive ? 'text-indigo-950' : 'text-slate-700'}`}>{evt.title}</h3>
-                  {evt.note && <p className="text-xs text-slate-500 mt-1 font-medium">{evt.note}</p>}
+                <div className="flex-1 mt-1">
+                  <div className={`text-xs font-extrabold tracking-wider mb-1 transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>{evt.time}</div>
+                  <h3 className={`font-black leading-snug transition-colors text-base ${isActive ? 'text-slate-800' : 'text-slate-700'}`}>{evt.title}</h3>
                 </div>
-                <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-500 ${isActive ? 'bg-indigo-50' : ''}`}>
-                  <ChevronDown size={18} className={`text-slate-300 transition-transform duration-500 ${isActive ? 'rotate-180 text-indigo-500' : ''}`} />
+                <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full transition-colors duration-500 mt-2 ${isActive ? 'bg-indigo-100 shadow-inner' : ''}`}>
+                  <ChevronDown size={20} className={`text-slate-400 transition-transform duration-500 ${isActive ? 'rotate-180 text-indigo-700' : ''}`} />
                 </div>
               </div>
 
               {isActive && (
-                <div className="mt-4 pt-4 border-t border-slate-100 animate-in slide-in-from-top-4 fade-in duration-500 ease-out space-y-3">
-                  {/* 加入 whitespace-pre-wrap 讓說明欄位支援換行排版 */}
+                <div className="mt-5 pt-5 border-t border-slate-300/50 animate-in slide-in-from-top-4 fade-in duration-500 ease-out space-y-4">
                   {evt.desc && (
-                    <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3.5 rounded-2xl border border-slate-100 shadow-inner whitespace-pre-wrap">
+                    <p className="text-sm text-slate-800 leading-relaxed bg-white/80 backdrop-blur-md p-4 rounded-[1.5rem] border border-white shadow-[inset_0_4px_8px_rgba(255,255,255,1)] whitespace-pre-wrap font-bold">
                       {evt.desc}
                     </p>
                   )}
-
-                  {/* 🅿️ 停車場雷達資訊 */}
                   {evt.parking && (
-                    <div className="w-full flex items-start bg-amber-50 border border-amber-100 p-3.5 rounded-2xl shadow-sm">
-                       <CircleParking size={18} className="text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
+                    <div className="w-full flex items-start bg-amber-50/90 border border-amber-200/60 p-4 rounded-[1.5rem] shadow-[inset_0_2px_4px_rgba(255,255,255,1)]">
+                       <CircleParking size={20} className="text-amber-500 mr-3 flex-shrink-0 mt-0.5" />
                        <div>
-                         <p className="text-xs font-black text-amber-900 mb-0.5">{evt.parking.name}</p>
-                         <p className="text-[10px] font-bold text-amber-700">{evt.parking.fee}</p>
+                         <p className="text-sm font-black text-amber-900 mb-0.5">{evt.parking.name}</p>
+                         <p className="text-xs font-bold text-amber-700">{evt.parking.fee}</p>
                        </div>
                     </div>
                   )}
-
-                  {/* ⛽ 還車找加油站功能 */}
                   {evt.gasStation && (
-                    <a 
-                      href="https://www.google.com/maps/search/加油站/@26.212312,127.679157,14z" 
-                      target="_blank" rel="noreferrer"
-                      className="w-full flex items-center justify-center bg-rose-50 border border-rose-100 text-rose-700 p-3.5 rounded-2xl hover:bg-rose-100 active:scale-95 transition-all shadow-sm"
-                    >
-                      <Fuel size={16} className="mr-2" /> <span className="text-xs font-black">一鍵搜尋周邊加油站 (滿油還車)</span>
+                    <a href="https://www.google.com/maps/search/加油站/@26.212312,127.679157,14z" target="_blank" rel="noreferrer"
+                      className="w-full flex items-center justify-center bg-rose-50/90 border border-rose-200 text-rose-700 p-4 rounded-[1.5rem] active:scale-95 transition-transform shadow-[inset_0_2px_4px_rgba(255,255,255,1)] font-black text-sm">
+                      <Fuel size={18} className="mr-2" /> 尋找周邊加油站 (滿油還車)
                     </a>
                   )}
-                  
-                  <a 
-                    href={mapData.url} target="_blank" rel="noreferrer"
-                    className={`w-full text-xs font-bold py-3.5 rounded-2xl flex items-center justify-center transition-all active:scale-95 shadow-sm
-                      ${mapData.isTransport 
-                        ? 'bg-gradient-to-r from-indigo-50 to-blue-50 text-indigo-700 border border-indigo-100 hover:shadow-md' 
-                        : 'bg-white text-slate-700 border border-slate-200 hover:shadow-md'}`}
-                  >
-                    {mapData.isTransport ? (
-                      <><Navigation size={16} className="mr-2" /> 開啟 Google 路線導航 <ArrowRight size={14} className="ml-1 opacity-70" /></>
-                    ) : (
-                      <><MapPin size={16} className="mr-2" /> 查看 Google 定點地標</>
-                    )}
+                  <a href={mapData.url} target="_blank" rel="noreferrer"
+                    className={`w-full text-sm font-black py-4 rounded-[1.5rem] flex items-center justify-center transition-transform active:scale-95 shadow-[inset_0_4px_8px_rgba(255,255,255,0.9),0_4px_12px_rgba(0,0,0,0.05)] border
+                      ${evt.type === 'transport' ? 'bg-indigo-50/90 text-indigo-700 border-indigo-200' : 'bg-white text-slate-800 border-white'}`}>
+                    {evt.type === 'transport' ? <><Navigation size={18} className="mr-2" /> 開啟路線導航 <ArrowRight size={16} className="ml-1 opacity-70" /></> : <><MapPin size={18} className="mr-2" /> 查看定點地標</>}
                   </a>
                 </div>
               )}
-            </div>
+            </LiquidRippleNode>
           );
         })}
       </div>
@@ -658,197 +640,87 @@ function Itinerary({ showToast }) {
 function VoucherWallet({ vouchers, setVouchers }) {
   const [selectedVoucher, setSelectedVoucher] = useState(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState({ id: null, title: '', note: '', textContent: '', image: null });
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setForm({ ...form, image: reader.result });
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!form.title) return;
-    
-    if (isEditing) {
-      setVouchers(vouchers.map(v => v.id === form.id ? { ...v, ...form } : v));
-    } else {
-      const newVoucher = {
-        id: Date.now(), title: form.title, note: form.note || '已上傳',
-        date: new Date().toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }),
-        textContent: form.textContent, image: form.image, details: '使用者自行上傳'
-      };
-      setVouchers([newVoucher, ...vouchers]);
-    }
-    closeForm();
+    const newVoucher = { id: Date.now(), title: form.title, note: form.note || '已上傳', date: '剛上傳', textContent: form.textContent, image: form.image };
+    setVouchers([newVoucher, ...vouchers]);
+    setIsFormOpen(false); setForm({ id: null, title: '', note: '', textContent: '', image: null });
   };
 
-  const handleEdit = (e, v) => {
-    e.stopPropagation();
-    setIsEditing(true);
-    setForm({ id: v.id, title: v.title, note: v.note || '', textContent: v.textContent || '', image: v.image || null });
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = (e, id) => {
-    e.stopPropagation();
-    setVouchers(vouchers.filter(v => v.id !== id));
-  };
-
-  const closeForm = () => {
-    setIsFormOpen(false);
-    setIsEditing(false);
-    setForm({ id: null, title: '', note: '', textContent: '', image: null });
-  };
-
-  const getVoucherIcon = (title) => {
-    if (!title) return <FileText size={24} />;
-    if (title.includes('機票') || title.includes('航班') || title.toLowerCase().includes('flight')) return <Plane size={24} />;
-    if (title.includes('住宿') || title.includes('飯店') || title.toLowerCase().includes('hotel')) return <Bed size={24} />;
-    return <FileText size={24} />;
-  };
+  const handleDelete = (e, id) => { e.stopPropagation(); setVouchers(vouchers.filter(v => v.id !== id)); };
 
   return (
-    <div className="p-4 pt-6 space-y-6 relative z-10">
-      
-      {/* 新增/編輯表單 */}
+    <div className="p-5 pt-8 space-y-6 relative z-10">
       {isFormOpen ? (
-        <div className={`bg-white/95 backdrop-blur-sm rounded-3xl p-6 shadow-lg transition-all duration-300 border-2 ${isEditing ? 'border-amber-300 ring-4 ring-amber-50' : 'border-indigo-300 ring-4 ring-indigo-50'} animate-in zoom-in-95`}>
-          <h3 className="font-extrabold text-slate-800 mb-4 flex items-center justify-between">
-            <div className="flex items-center">
-              {isEditing ? <Edit2 size={18} className="mr-2 text-amber-500" /> : <Plus size={18} className="mr-2 text-indigo-500" />} 
-              {isEditing ? '編輯憑證' : '新增電子憑證'}
-            </div>
-            <button type="button" onClick={closeForm} className="text-xs bg-slate-100 text-slate-500 font-bold px-3 py-1.5 rounded-lg hover:bg-slate-200 active:scale-95 transition-all">取消</button>
+        <div className="liquid-panel p-6 bubble-element border-indigo-200">
+          <h3 className="font-black text-slate-800 mb-5 flex items-center justify-between">
+            <span className="flex items-center text-lg"><Plus size={20} className="mr-2 text-indigo-600" /> 新增憑證</span>
+            <button type="button" onClick={() => setIsFormOpen(false)} className="text-xs bg-white/90 shadow-sm text-slate-600 font-bold px-4 py-2 rounded-xl active:scale-95 transition-all tension-morph">取消</button>
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <input 
-              type="text" placeholder="憑證標題 (例: 虎航去程機票)*" required value={form.title} onChange={e => setForm({...form, title: e.target.value})}
-              className="w-full bg-slate-50 text-sm font-bold border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-400 outline-none transition-all hover:bg-white"
-            />
-            <input 
-              type="text" placeholder="副標題/備註 (例: 航廈 1)" value={form.note} onChange={e => setForm({...form, note: e.target.value})}
-              className="w-full bg-slate-50 text-sm font-medium border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-400 outline-none transition-all hover:bg-white"
-            />
-            <textarea 
-              placeholder="詳細內容 (如訂位代號、地址...)" rows="3" value={form.textContent} onChange={e => setForm({...form, textContent: e.target.value})}
-              className="w-full bg-slate-50 text-sm font-medium border border-slate-200 rounded-2xl p-4 focus:ring-2 focus:ring-indigo-400 outline-none transition-all hover:bg-white resize-none"
-            />
-            
-            <div className="border-2 border-dashed border-slate-300 rounded-2xl p-4 text-center hover:bg-indigo-50 hover:border-indigo-300 transition-all duration-300 relative overflow-hidden group">
-              {form.image ? (
-                <div className="relative">
-                  <img src={form.image} alt="Preview" className="mx-auto h-32 object-contain rounded-lg shadow-sm" />
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg backdrop-blur-sm">
-                    <span className="text-white text-xs font-bold flex items-center"><ImagePlus size={16} className="mr-1"/> 更換截圖</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-3">
-                  <div className="bg-slate-100 p-3 rounded-full mb-3 group-hover:bg-indigo-100 transition-colors duration-300">
-                    <ImagePlus size={24} className="text-slate-400 group-hover:text-indigo-500 transition-colors" />
-                  </div>
-                  <span className="text-xs font-bold text-slate-500 group-hover:text-indigo-600 transition-colors">點擊上傳憑證截圖 / QR Code</span>
-                </div>
-              )}
-              <input type="file" accept="image/*" onChange={handleImageUpload} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+            <input type="text" placeholder="標題 (例: 機票)*" required value={form.title} onChange={e => setForm({...form, title: e.target.value})} className="w-full bg-white/80 text-base font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
+            <input type="text" placeholder="備註 (例: 航廈 1)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} className="w-full bg-white/80 text-sm font-bold border border-white rounded-[1.5rem] p-4 outline-none focus:ring-4 focus:ring-indigo-100 shadow-[inset_0_4px_8px_rgba(0,0,0,0.02)] transition-all text-slate-800" />
+            <div className="border-2 border-dashed border-indigo-300/80 rounded-[1.5rem] p-4 text-center bg-white/50 hover:bg-white/80 transition-all relative shadow-[inset_0_4px_10px_rgba(255,255,255,0.9)]">
+              {form.image ? <img src={form.image} alt="Preview" className="mx-auto h-28 object-contain rounded-xl drop-shadow-md" /> : <div className="text-sm font-black text-indigo-500 py-6">點擊上傳截圖以供離線查閱</div>}
+              <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files[0]; if(f){ const r = new FileReader(); r.onloadend = () => setForm({...form, image: r.result}); r.readAsDataURL(f); } }} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
-
-            <button type="submit" className={`w-full text-white font-bold py-4 rounded-2xl transition-all duration-300 active:scale-[0.95] shadow-md ${isEditing ? 'bg-gradient-to-r from-amber-400 to-orange-500 hover:shadow-lg hover:-translate-y-0.5' : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:shadow-lg hover:-translate-y-0.5'}`}>
-              {isEditing ? '儲存修改' : '儲存憑證'}
-            </button>
+            <LiquidRippleNode onClick={handleSubmit} className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-black py-4 rounded-[1.5rem] text-center shadow-[0_10px_20px_rgba(99,102,241,0.3),inset_0_4px_10px_rgba(255,255,255,0.4)] mt-2">儲存</LiquidRippleNode>
           </form>
         </div>
       ) : (
-        <button 
-          onClick={() => setIsFormOpen(true)}
-          className="w-full bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col items-center justify-center gap-3 hover:bg-indigo-50 hover:-translate-y-1 hover:shadow-md hover:border-indigo-200 active:scale-95 transition-all duration-500 ease-out group"
-        >
-          <div className="bg-indigo-100 text-indigo-600 p-4 rounded-full group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500 shadow-inner">
-            <Upload size={28} />
-          </div>
-          <span className="text-sm font-bold text-slate-600 group-hover:text-indigo-700 transition-colors">新增電子憑證</span>
-        </button>
+        <LiquidRippleNode onClick={() => setIsFormOpen(true)} className="w-full liquid-panel p-6 flex flex-col items-center justify-center gap-3 hover:subsurface-glow group bubble-element">
+          <div className="bg-white/90 text-indigo-600 p-4 rounded-full group-hover:bg-indigo-500 group-hover:text-white transition-colors duration-500 shadow-[inset_0_4px_10px_rgba(255,255,255,1),0_4px_10px_rgba(0,0,0,0.05)]"><Upload size={28} /></div>
+          <span className="text-sm font-black text-slate-800">新增電子憑證</span>
+        </LiquidRippleNode>
       )}
 
       <div>
-        <h3 className="font-extrabold text-slate-800 mb-4 ml-2">離線票夾</h3>
+        <h3 className="font-black text-slate-800 mb-4 px-2 drop-shadow-sm text-lg">離線票夾</h3>
         <div className="space-y-4">
           {vouchers.map((v, idx) => (
-            <div 
-              key={v.id} 
-              onClick={() => setSelectedVoucher(v)}
-              className="stagger-item bg-white/90 backdrop-blur-sm rounded-3xl p-1 shadow-sm border border-slate-100 flex items-center relative overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-md hover:border-indigo-300 transition-all duration-500 ease-out active:scale-[0.97] group"
-              style={{ animationDelay: `${idx * 80}ms` }}
-            >
-              <div className="w-2.5 h-full absolute left-0 top-0 bg-gradient-to-b from-indigo-400 to-purple-500"></div>
-              <div className="p-4 pl-7 flex-1">
-                <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-bold text-slate-800 text-sm truncate pr-2 group-hover:text-indigo-700 transition-colors">{v.title}</h4>
-                  <div className="bg-slate-50 p-1.5 rounded-xl text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500 transition-colors">
-                     {v.image ? <ImagePlus size={18} /> : <QrCode size={18} />}
-                  </div>
+            <LiquidRippleNode key={v.id} onClick={() => setSelectedVoucher(v)} className="liquid-panel p-1 flex items-center cursor-pointer bubble-element group" style={{ animationDelay: `${idx * 50}ms` }}>
+              <div className="w-4 h-[90%] absolute left-1.5 top-1/2 -translate-y-1/2 bg-gradient-to-b from-indigo-400 to-purple-500 rounded-full shadow-[inset_0_2px_4px_rgba(255,255,255,0.5)]"></div>
+              <div className="p-4 pl-8 flex-1">
+                <div className="flex justify-between items-start mb-1">
+                  <h4 className="font-black text-slate-800 text-base truncate">{v.title}</h4>
+                  <div className="bg-white/90 p-2 rounded-xl text-indigo-600 shadow-[inset_0_2px_4px_rgba(255,255,255,1)]"><QrCode size={18} /></div>
                 </div>
                 <div className="flex justify-between items-end">
-                  <p className="text-[10px] text-slate-400 font-bold">{v.note}</p>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[10px] font-black bg-slate-50 text-slate-500 px-2 py-1 rounded-lg border border-slate-100">{v.date}</span>
-                    <div className="flex space-x-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button type="button" onClick={(e) => handleEdit(e, v)} className="p-1 bg-slate-100 rounded-md text-slate-500 hover:text-amber-500 hover:bg-amber-50 active:scale-90 transition-all"><Edit2 size={12}/></button>
-                      <button type="button" onClick={(e) => handleDelete(e, v.id)} className="p-1 bg-slate-100 rounded-md text-slate-500 hover:text-rose-500 hover:bg-rose-50 active:scale-90 transition-all"><Trash2 size={12}/></button>
-                    </div>
-                  </div>
+                  <p className="text-xs text-slate-500 font-bold">{v.note}</p>
+                  <button type="button" onClick={(e) => handleDelete(e, v.id)} className="p-2 bg-white/80 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shadow-sm"><Trash2 size={16}/></button>
                 </div>
               </div>
-            </div>
+            </LiquidRippleNode>
           ))}
-          {vouchers.length === 0 && (
-            <div className="text-center text-slate-400 py-8 text-sm font-medium">票夾空空如也，趕快上傳憑證吧！</div>
-          )}
         </div>
       </div>
 
+      {/* 憑證檢視 Modal */}
       {selectedVoucher && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
-          <div className="modal-animate bg-white w-full max-w-sm rounded-[2rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[90vh]">
-            <div className="p-5 flex justify-between items-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 flex-shrink-0 shadow-sm z-10">
-              <h3 className="font-black text-lg flex items-center gap-2 drop-shadow-sm">
-                {getVoucherIcon(selectedVoucher.title)} 電子憑證
-              </h3>
-              <button type="button" onClick={() => setSelectedVoucher(null)} className="p-1.5 bg-white/20 hover:bg-white/30 rounded-full transition-colors active:scale-90"><X size={20}/></button>
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-xl animate-in fade-in duration-300">
+          <div className="bg-white/90 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80 animate-in zoom-in-95 cubic-bezier(0.34, 1.56, 0.64, 1)">
+            <div className="p-5 flex justify-between items-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 shadow-sm z-10 chromatic-edge">
+              <h3 className="font-black text-lg">憑證檢視</h3>
+              <button onClick={() => setSelectedVoucher(null)} className="p-2 bg-white/20 rounded-full active:scale-90 transition-transform tension-morph"><X size={20}/></button>
             </div>
-            
-            <div className="p-8 overflow-y-auto bg-[#F8FAFC]">
+            <div className="p-8 overflow-y-auto bg-white/60">
               <div className="text-center mb-6">
-                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-1">VOUCHER NAME</p>
-                <h4 className="text-xl font-black text-slate-800 leading-tight">{selectedVoucher.title}</h4>
-                <p className="text-xs font-bold text-indigo-500 mt-3 bg-indigo-50 inline-block px-4 py-1.5 rounded-full border border-indigo-100">{selectedVoucher.note}</p>
+                <h4 className="text-3xl font-black text-slate-800 tracking-tight">{selectedVoucher.title}</h4>
+                <p className="text-sm font-black text-indigo-600 mt-2 bg-indigo-50/80 border border-indigo-100 inline-block px-4 py-1.5 rounded-full">{selectedVoucher.note}</p>
               </div>
-              
-              {/* 動態展示區：這會先顯示使用者上傳的圖片，如果沒有，會顯示動態掃描 QR Code 預設畫面 */}
               {selectedVoucher.image ? (
-                <div className="mx-auto rounded-2xl overflow-hidden border-2 border-white shadow-md mb-6 bg-white p-2">
-                  <img src={selectedVoucher.image} alt="Voucher" className="w-full h-auto object-contain max-h-64 rounded-xl" />
-                </div>
+                <img src={selectedVoucher.image} alt="Voucher" className="w-full rounded-[2rem] border-8 border-white shadow-[0_10px_20px_rgba(0,0,0,0.1),inset_0_4px_10px_rgba(255,255,255,0.9)] mb-6 object-contain max-h-64 bg-white" />
               ) : (
-                <div className="bg-white border-4 border-white shadow-md p-5 rounded-[2rem] mx-auto w-48 h-48 flex items-center justify-center relative overflow-hidden mb-6">
-                   <QrCode size={120} className="text-slate-800" strokeWidth={1} />
+                <div className="bg-white border-8 border-white shadow-[0_10px_20px_rgba(0,0,0,0.1)] rounded-[2.5rem] mx-auto w-48 h-48 flex items-center justify-center relative overflow-hidden mb-6">
+                   <QrCode size={100} className="text-slate-800" strokeWidth={1.5} />
                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-transparent scan-line"></div>
                 </div>
               )}
-
-              {selectedVoucher.textContent && (
-                <div className="bg-white rounded-2xl p-4 border border-slate-100 mb-6 shadow-sm">
-                  <p className="text-sm text-slate-600 whitespace-pre-wrap leading-relaxed font-medium">{selectedVoucher.textContent}</p>
-                </div>
-              )}
-              
-              <div className="mt-4 flex items-center justify-center text-emerald-600 font-bold text-sm bg-emerald-50 py-3.5 rounded-2xl border border-emerald-100 shadow-sm">
-                <CheckCircle size={18} className="mr-2" /> 離線快取已驗證
+              <div className="flex items-center justify-center text-emerald-700 font-black text-sm bg-emerald-50/90 py-4 rounded-[1.5rem] border border-emerald-200 shadow-[inset_0_2px_4px_rgba(255,255,255,1)]">
+                <CheckCircle size={20} className="mr-2" /> 離線快取驗證通過
               </div>
             </div>
           </div>
@@ -863,75 +735,43 @@ function VoucherWallet({ vouchers, setVouchers }) {
 // ==========================================
 function EmergencyKit({ isOffline, setIsOffline }) {
   return (
-    <div className="p-4 pt-6 space-y-6 animate-in fade-in duration-500 relative z-10">
+    <div className="p-5 pt-8 space-y-6 relative z-10">
       
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 shadow-sm border border-slate-100 flex items-center justify-between">
+      <div className="liquid-panel p-6 flex items-center justify-between bubble-element" style={{animationDelay: '0ms'}}>
         <div>
-          <h3 className="font-extrabold text-slate-800 flex items-center text-sm">
-            <Wifi size={16} className="mr-2 text-indigo-500" /> PWA 離線模式測試
-          </h3>
-          <p className="text-[10px] text-slate-400 font-bold mt-1">切換以模擬玉泉洞深處無訊號狀態</p>
+          <h3 className="font-black text-slate-800 flex items-center text-lg"><Wifi size={20} className="mr-2 text-indigo-600" /> PWA 離線測試</h3>
+          <p className="text-xs text-slate-500 font-bold mt-1">模擬玉泉洞無訊號狀態</p>
         </div>
-        <button 
-          type="button"
-          onClick={() => setIsOffline(!isOffline)}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 focus:outline-none ${isOffline ? 'bg-rose-500' : 'bg-emerald-500'}`}
-        >
-          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition duration-300 ${isOffline ? 'translate-x-6' : 'translate-x-1'}`} />
+        <button type="button" onClick={() => setIsOffline(!isOffline)} className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-500 shadow-[inset_0_2px_8px_rgba(0,0,0,0.2)] border border-white/50 ${isOffline ? 'bg-rose-500' : 'bg-emerald-400'}`}>
+          <span className={`inline-block h-6 w-6 transform rounded-full bg-white shadow-md transition-transform duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isOffline ? 'translate-x-7' : 'translate-x-1.5'}`} />
         </button>
       </div>
 
-      <div className="bg-rose-50 rounded-3xl p-6 border border-rose-100 shadow-sm relative overflow-hidden stagger-item">
-        <div className="absolute top-0 right-0 p-4 opacity-10">
-          <ShieldAlert size={80} className="text-rose-500" />
-        </div>
-        <h2 className="text-lg font-black text-rose-800 mb-2 relative z-10 flex items-center">
-          海外急難救助
-        </h2>
-        <p className="text-xs text-rose-600 font-bold mb-6 relative z-10">點擊按鈕將直接撥號 (請確保開啟國際漫遊)</p>
-
-        <div className="space-y-3 relative z-10">
-          <a href="tel:+81-90-1942-1107" className="w-full bg-white p-4 rounded-2xl flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-rose-100 active:scale-95 group">
-            <div>
-              <h4 className="font-bold text-slate-800 text-sm">台北駐日代表處 (那霸)</h4>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">護照遺失 / 重大意外</p>
-            </div>
-            <div className="bg-rose-100 text-rose-600 p-2.5 rounded-full group-hover:bg-rose-500 group-hover:text-white transition-colors">
-              <PhoneCall size={18} />
-            </div>
-          </a>
-
-          <a href="tel:0570-077-202" className="w-full bg-white p-4 rounded-2xl flex items-center justify-between hover:shadow-md hover:-translate-y-1 transition-all duration-300 border border-rose-100 active:scale-95 group">
-            <div>
-              <h4 className="font-bold text-slate-800 text-sm">沖繩外國人醫療支援專線</h4>
-              <p className="text-[10px] font-bold text-slate-400 mt-0.5">突發疾病 / 醫院轉介 (有中文)</p>
-            </div>
-            <div className="bg-rose-100 text-rose-600 p-2.5 rounded-full group-hover:bg-rose-500 group-hover:text-white transition-colors">
-              <PhoneCall size={18} />
-            </div>
-          </a>
+      <div className="liquid-panel p-6 !bg-rose-50/80 !border-rose-200/80 relative overflow-hidden bubble-element chromatic-edge" style={{animationDelay: '50ms'}}>
+        <div className="absolute top-[-10%] right-[-10%] p-4 opacity-10 pointer-events-none"><ShieldAlert size={140} className="text-rose-600" /></div>
+        <h2 className="text-xl font-black text-rose-800 mb-5 relative z-10 drop-shadow-sm">海外急難救助</h2>
+        <div className="space-y-4 relative z-10">
+          <LiquidRippleNode onClick={() => window.location.href="tel:+81-90-1942-1107"} className="w-full bg-white/95 p-5 rounded-[2rem] flex items-center justify-between hover:shadow-lg border border-rose-100 shadow-[inset_0_4px_8px_rgba(255,255,255,1),0_4px_10px_rgba(225,29,72,0.08)] group">
+            <div><h4 className="font-black text-slate-800 text-sm">台北駐日代表處 (那霸)</h4><p className="text-[11px] font-bold text-slate-500 mt-0.5">護照遺失 / 重大意外</p></div>
+            <div className="bg-rose-100 text-rose-600 p-3.5 rounded-full group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)]"><PhoneCall size={18} /></div>
+          </LiquidRippleNode>
+          <LiquidRippleNode onClick={() => window.location.href="tel:0570-077-202"} className="w-full bg-white/95 p-5 rounded-[2rem] flex items-center justify-between hover:shadow-lg border border-rose-100 shadow-[inset_0_4px_8px_rgba(255,255,255,1),0_4px_10px_rgba(225,29,72,0.08)] group">
+            <div><h4 className="font-black text-slate-800 text-sm">外國人醫療支援專線</h4><p className="text-[11px] font-bold text-slate-500 mt-0.5">突發疾病 (有中文)</p></div>
+            <div className="bg-rose-100 text-rose-600 p-3.5 rounded-full group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300 shadow-[inset_0_2px_4px_rgba(255,255,255,0.8)]"><PhoneCall size={18} /></div>
+          </LiquidRippleNode>
         </div>
       </div>
 
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 border border-slate-100 shadow-sm stagger-item" style={{ animationDelay: '100ms' }}>
-        <h2 className="text-sm font-black text-slate-800 mb-4">💳 個人重要保單與卡片</h2>
-        <div className="space-y-3">
-          <div className="w-full bg-slate-50 p-4 rounded-2xl flex flex-col justify-between border border-slate-100">
-            <div className="flex justify-between items-start w-full">
-               <div>
-                 <h4 className="font-bold text-slate-700 text-sm">旅平險 / 不便險 客服</h4>
-                 <p className="text-[10px] font-bold text-slate-400 mt-1 bg-white inline-block px-2 py-0.5 rounded-md border border-slate-200">保單號碼: (請於出發前自行填寫)</p>
-               </div>
-               <button type="button" onClick={() => alert('請先設定您的保險客服電話')} className="bg-slate-200 text-slate-500 p-2 rounded-xl hover:bg-slate-300 transition-colors active:scale-90"><PhoneCall size={16} /></button>
-            </div>
+      <div className="liquid-panel p-6 bubble-element" style={{animationDelay: '100ms'}}>
+        <h2 className="text-lg font-black text-slate-800 mb-4 drop-shadow-sm">保單與卡片</h2>
+        <div className="space-y-4">
+          <div className="w-full bg-white/80 p-5 rounded-[2rem] flex justify-between items-center border border-white shadow-[inset_0_4px_8px_rgba(255,255,255,1)]">
+             <div><h4 className="font-black text-slate-800 text-sm">旅平險客服</h4><p className="text-[11px] font-bold text-slate-500 mt-0.5">出發前自行設定</p></div>
+             <button type="button" onClick={() => alert('請設定電話')} className="bg-white shadow-[0_4px_10px_rgba(0,0,0,0.05),inset_0_2px_4px_rgba(255,255,255,1)] text-slate-500 p-3.5 rounded-full active:scale-90 transition-transform tension-morph"><PhoneCall size={18} /></button>
           </div>
-          
-          <div className="w-full bg-slate-50 p-4 rounded-2xl flex justify-between items-center border border-slate-100">
-             <div>
-               <h4 className="font-bold text-slate-700 text-sm">信用卡海外掛失</h4>
-               <p className="text-[10px] font-bold text-slate-400 mt-0.5">24 小時服務專線 (出發前自行設定)</p>
-             </div>
-             <button type="button" onClick={() => alert('請先設定您的信用卡掛失專線')} className="bg-slate-200 text-slate-500 p-2 rounded-xl hover:bg-slate-300 transition-colors active:scale-90"><PhoneCall size={16} /></button>
+          <div className="w-full bg-white/80 p-5 rounded-[2rem] flex justify-between items-center border border-white shadow-[inset_0_4px_8px_rgba(255,255,255,1)]">
+             <div><h4 className="font-black text-slate-800 text-sm">信用卡掛失</h4><p className="text-[11px] font-bold text-slate-500 mt-0.5">24H 服務專線</p></div>
+             <button type="button" onClick={() => alert('請設定電話')} className="bg-white shadow-[0_4px_10px_rgba(0,0,0,0.05),inset_0_2px_4px_rgba(255,255,255,1)] text-slate-500 p-3.5 rounded-full active:scale-90 transition-transform tension-morph"><PhoneCall size={18} /></button>
           </div>
         </div>
       </div>

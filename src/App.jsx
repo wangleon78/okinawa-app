@@ -113,6 +113,14 @@ const PROCESSED_ITINERARY = ITINERARY_DATA.map(dayData => {
   return { ...dayData, events };
 });
 
+// --- 🌟 Framer Motion 全域 iOS 轉場配置 ---
+const pageTransition = {
+  initial: { opacity: 0, x: 25, scale: 0.96, filter: 'blur(8px)' },
+  animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
+  exit: { opacity: 0, x: -25, scale: 0.96, filter: 'blur(8px)' },
+  transition: { type: 'spring', damping: 25, stiffness: 200 }
+};
+
 // --- 🌟 觸覺漣漪視覺化 ---
 const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   const [ripples, setRipples] = useState([]);
@@ -167,14 +175,6 @@ const AmbientBackground = () => (
     <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply" style={{animationDuration: '12s', animationDelay: '4s'}} />
   </div>
 );
-
-// --- 🌟 Framer Motion 全域 iOS 轉場配置 ---
-const pageTransition = {
-  initial: { opacity: 0, x: 30, scale: 0.96, filter: 'blur(10px)' },
-  animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
-  exit: { opacity: 0, x: -30, scale: 0.96, filter: 'blur(10px)' },
-  transition: { type: 'spring', damping: 26, stiffness: 220 }
-};
 
 // --- 🌟 全域 App 進入點 ---
 export default function App() {
@@ -300,28 +300,27 @@ export default function App() {
     <div className="fixed inset-0 text-slate-800 font-sans selection:bg-indigo-100 flex flex-col items-center bg-[#E8EEF5]">
       <AmbientBackground />
       {toastMsg.visible && (
-        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center text-indigo-900 border-white shadow-xl">
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center text-indigo-900 border-white shadow-xl z-50">
           {toastMsg.text.includes('⚠️') ? <ShieldAlert size={18} className="mr-2 text-amber-500" /> : <CheckCircle size={18} className="mr-2 text-emerald-500" />} 
           {toastMsg.text}
         </div>
       )}
 
-      {/* 🌟 沙盒隔離滾動區：根絕全白 Bug，每個頁面都有自己獨立的捲動條 */}
-      <main className="w-full max-w-md relative z-10 flex-1 flex flex-col overflow-hidden pt-safe">
+      {/* 🌟 沙盒隔離區：外層 main 鎖死為觀景窗，完全不負責滾動 */}
+      <main className="w-full max-w-md relative z-10 flex-1 overflow-hidden pt-safe">
         {isOffline && (
-          <div className="bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center flex-shrink-0 shadow-md z-[100]">
+          <div className="absolute top-0 w-full bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center shadow-md z-[100]">
             <WifiOff size={14} className="mr-2 animate-pulse" /> 離線就緒模式 (本地快取運作中)
           </div>
         )}
         
-        <div className="relative flex-1 w-full overflow-hidden">
-          <AnimatePresence mode="wait">
-            {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
-            {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} />}
-            {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
-            {activeTab === 'emergency' && <EmergencyKit key="emergency" isOffline={isOffline} setIsOffline={setIsOffline} />}
-          </AnimatePresence>
-        </div>
+        {/* 🌟 Framer Motion 監聽：每個子頁面自己處理自己的 Scroll，切換時銷毀舊 Scroll，物理防白屏！ */}
+        <AnimatePresence mode="wait">
+          {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
+          {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} />}
+          {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
+          {activeTab === 'emergency' && <EmergencyKit key="emergency" isOffline={isOffline} setIsOffline={setIsOffline} />}
+        </AnimatePresence>
       </main>
 
       <nav className="fixed bottom-6 left-0 right-0 mx-auto w-[92%] max-w-md z-50 nav-frosted rounded-[3rem] shadow-[0_20px_40px_rgba(31,38,135,0.15),inset_0_4px_10px_rgba(255,255,255,1)] flex justify-around items-center px-2 py-1 border border-white chromatic-edge">
@@ -414,7 +413,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
               )}
-              汇率
+              匯率
               <input type="number" step="0.001" value={exchangeRate} onChange={e => {
                 setExchangeRate(Number(e.target.value) || 0);
                 setIsRateLive(false);
@@ -478,14 +477,14 @@ function CountdownBanner({ nextEvent }) {
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary) - 🌟 無級平滑連續折疊 + Framer Motion
+// 2. 行程嚮導與地圖 (Itinerary) - 🌟 無級平滑連續折疊 + 專屬滾動沙盒
 // ==========================================
 function Itinerary({ showToast }) {
   const [activeDay, setActiveDay] = useState(1);
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
   
-  // 🌟 使用 Framer Motion useScroll 完美綁定滾動像素，100% 防止跳動與閃爍
+  // 🌟 Framer Motion 完美綁定此元件的專屬滾動，防跳動！
   const scrollRef = useRef(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const tabsHeight = useTransform(scrollY, [0, 60], [80, 0]);
@@ -518,7 +517,6 @@ function Itinerary({ showToast }) {
   return (
     <motion.div
       ref={scrollRef}
-      id="main-scroll"
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
       initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
     >
@@ -531,7 +529,6 @@ function Itinerary({ showToast }) {
             <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,1)] pointer-events-none"></div>
           </div>
 
-          {/* 🌟 透過 motion.div 映射高度與透明度，徹底解決 CSS Transition 引發的跳動 */}
           <motion.div style={{ height: tabsHeight, opacity: tabsOpacity, y: tabsY, pointerEvents: tabsPointerEvents }} className="overflow-hidden">
             <div className="px-4 py-2 pb-4 flex space-x-3 overflow-x-auto scrollbar-hide pt-2">
               {PROCESSED_ITINERARY.map((data) => {
@@ -542,7 +539,8 @@ function Itinerary({ showToast }) {
                     onClick={() => { 
                       setActiveDay(data.day); 
                       setActiveEventIndex(0); 
-                      document.getElementById('main-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); 
+                      // 🌟 平滑捲動使用它專屬的 scrollRef，精準跳轉
+                      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); 
                     }}
                     className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white relative
                       ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
@@ -566,7 +564,6 @@ function Itinerary({ showToast }) {
              </h2>
           </div>
 
-          {/* 🌟 拔除死鎖外層的退場監聽，改為單純的滑入彈簧動畫，瘋狂點擊也不會當機空白 */}
           <motion.div
             key={activeDay}
             initial={{ opacity: 0, x: 40, filter: 'blur(10px)' }}
@@ -577,9 +574,7 @@ function Itinerary({ showToast }) {
             {events.map((evt, idx) => {
               const isActive = safeIndex === idx;
               const mapData = {
-                 url: evt.type === 'transport' 
-                  ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title)}`
-                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title)}`
+                 url: evt.type === 'transport' ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title)}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title)}`
               };
 
               return (
@@ -604,10 +599,7 @@ function Itinerary({ showToast }) {
 
                   <AnimatePresence>
                     {isActive && (
-                      <motion.div 
-                        initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }}
-                        className="overflow-hidden"
-                      >
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
                         <div className="mt-5 pt-5 border-t border-slate-300/50 space-y-4 pb-2">
                           {evt.desc && (
                             <p className="text-sm text-slate-800 leading-relaxed bg-white/80 backdrop-blur-md p-4 rounded-[1.5rem] border border-white shadow-[inset_0_4px_8px_rgba(255,255,255,1)] whitespace-pre-wrap font-bold">

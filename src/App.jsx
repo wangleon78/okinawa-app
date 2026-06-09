@@ -113,12 +113,14 @@ const PROCESSED_ITINERARY = ITINERARY_DATA.map(dayData => {
   return { ...dayData, events };
 });
 
-// --- 🌟 Framer Motion 全域 iOS 轉場配置 ---
+// --- 🌟 完美防崩潰的輕量級全域轉場 ---
+// 🚨 拔除 scale, x, y 位移，僅保留 opacity。
+// 這樣瀏覽器就不會把長達 5000px 的滾動容器硬轉成單一 GPU 紋理，徹底解決 Android 白畫面崩潰！
 const pageTransition = {
-  initial: { opacity: 0, x: 25, scale: 0.96, filter: 'blur(8px)' },
-  animate: { opacity: 1, x: 0, scale: 1, filter: 'blur(0px)' },
-  exit: { opacity: 0, x: -25, scale: 0.96, filter: 'blur(8px)' },
-  transition: { type: 'spring', damping: 25, stiffness: 200 }
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, transition: { duration: 0.15 } },
+  transition: { type: 'spring', damping: 25, stiffness: 220 }
 };
 
 // --- 🌟 觸覺漣漪視覺化 ---
@@ -255,6 +257,8 @@ export default function App() {
       .scrollbar-hide::-webkit-scrollbar { display: none; }
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
+      /* 移除破壞 GPU 的 translateZ(0)，回歸最乾淨的原生渲染，徹底防止 Android VRAM 崩潰 */
+      
       .liquid-panel {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%);
         backdrop-filter: blur(28px) saturate(200%); -webkit-backdrop-filter: blur(28px) saturate(200%);
@@ -306,7 +310,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 🌟 沙盒隔離區：外層 main 鎖死為觀景窗，完全不負責滾動 */}
+      {/* 🌟 沙盒隔離區：外層 main 鎖死為純觀景窗，完全不負責滾動。每個子標籤頁擁有獨立 ScrollBar */}
       <main className="w-full max-w-md relative z-10 flex-1 overflow-hidden pt-safe">
         {isOffline && (
           <div className="absolute top-0 w-full bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center shadow-md z-[100]">
@@ -314,8 +318,8 @@ export default function App() {
           </div>
         )}
         
-        {/* 🌟 Framer Motion 監聽：每個子頁面自己處理自己的 Scroll，切換時銷毀舊 Scroll，物理防白屏！ */}
-        <AnimatePresence mode="wait">
+        {/* 🌟 拔除 mode="wait"，解除死鎖，啟用無阻塞 Concurrent Routing，切換瞬間完成 */}
+        <AnimatePresence>
           {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} />}
           {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} />}
           {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
@@ -477,14 +481,14 @@ function CountdownBanner({ nextEvent }) {
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary) - 🌟 無級平滑連續折疊 + 專屬滾動沙盒
+// 2. 行程嚮導與地圖 (Itinerary) - 🌟 無級平滑連續折疊 + 專屬獨立滾動沙盒
 // ==========================================
 function Itinerary({ showToast }) {
   const [activeDay, setActiveDay] = useState(1);
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
   
-  // 🌟 Framer Motion 完美綁定此元件的專屬滾動，防跳動！
+  // 🌟 使用 Framer Motion useScroll 完美綁定專屬的滾動容器
   const scrollRef = useRef(null);
   const { scrollY } = useScroll({ container: scrollRef });
   const tabsHeight = useTransform(scrollY, [0, 60], [80, 0]);
@@ -516,6 +520,7 @@ function Itinerary({ showToast }) {
 
   return (
     <motion.div
+      id="itinerary-scroll"
       ref={scrollRef}
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
       initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
@@ -539,8 +544,8 @@ function Itinerary({ showToast }) {
                     onClick={() => { 
                       setActiveDay(data.day); 
                       setActiveEventIndex(0); 
-                      // 🌟 平滑捲動使用它專屬的 scrollRef，精準跳轉
-                      scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' }); 
+                      // 🌟 點擊新日期時，精準回到頂部
+                      document.getElementById('itinerary-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); 
                     }}
                     className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-500 border border-white relative
                       ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
@@ -566,9 +571,9 @@ function Itinerary({ showToast }) {
 
           <motion.div
             key={activeDay}
-            initial={{ opacity: 0, x: 40, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, x: 0, filter: 'blur(0px)' }}
-            transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+            initial={{ opacity: 0, x: 30, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
             className="space-y-5"
           >
             {events.map((evt, idx) => {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { motion, AnimatePresence, useScroll, useTransform, Reorder, useDragControls } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   Home, Map as MapIcon, Ticket, ShieldAlert,
   Plus, Plane, Car, Coffee, ShoppingBag, Bed, Activity,
   ChevronDown, CloudSun, MapPin, 
   Trash2, X, QrCode, CheckCircle, Upload, Navigation, ArrowRight,
-  CircleParking, Fuel, PlaneTakeoff, PlaneLanding, RefreshCw, Calculator, PhoneCall, Wifi, WifiOff, Clock, Edit3, Settings, History, GripVertical
+  CircleParking, Fuel, PlaneTakeoff, PlaneLanding, RefreshCw, Calculator, PhoneCall, Wifi, WifiOff, Clock, Save, History, Edit3, Settings
 } from 'lucide-react';
 
 // === 🌟 1. 引入 Firebase 核心模組 ===
@@ -29,12 +29,12 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 try { getAnalytics(app); } catch (e) { /* 防止部分擋廣告外掛封鎖 Analytics 導致白畫面 */ }
 
-// --- 🌟 圖標對映表 ---
+// --- 🌟 圖標對映表 (為了解決 JSON 存入 Firebase 時遺失 Function 的問題) ---
 const ICON_MAP = {
   PlaneLanding, Car, Coffee, ShoppingBag, Bed, Activity, MapIcon, PlaneTakeoff, MapPin
 };
 
-// --- 資料區：預設行程表 (作為雲端無資料時的備備品) ---
+// --- 資料區：預設行程表 (圖標改用字串對應) ---
 const DEFAULT_ITINERARY = [
   {
     day: 1, date: '8/18', title: '抵達、北谷拉麵與浮潛', region: '那霸 / 北谷 / 恩納',
@@ -127,11 +127,11 @@ const DEFAULT_ITINERARY = [
 
 const TRIP_YEAR = 2026; 
 
-// --- 🌟 完美防崩潰的輕量級全域轉場 ---
+// --- 🌟 完美防崩潰的全域轉場配置 ---
+// 🚨 徹底拔除 exit 退場動畫！確保舊 DOM 瞬間銷毀，完美解決 Android GPU 記憶體溢出 (OOM) 導致的白屏死鎖問題。
 const pageTransition = {
-  initial: { opacity: 0, y: 15 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, transition: { duration: 0.15 } },
+  initial: { opacity: 0, x: 25, scale: 0.96 },
+  animate: { opacity: 1, x: 0, scale: 1 },
   transition: { type: 'spring', damping: 25, stiffness: 220 }
 };
 
@@ -191,7 +191,7 @@ const AmbientBackground = () => (
 );
 
 // ==========================================
-// 🌟 全域 App 進入點
+// 🌟 全域 App 進入點 (整合 Firebase 雲端讀寫)
 // ==========================================
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -204,18 +204,19 @@ export default function App() {
     setTimeout(() => setToastMsg({ text: '', visible: false }), 2500);
   };
 
+  // 1. Firebase 狀態管理
   const [itinerary, setItinerary] = useState(DEFAULT_ITINERARY);
   const [history, setHistory] = useState([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
 
+  // 2. 其它狀態
   const [exchangeRate, setExchangeRate] = useState(0.215);
   const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
   const [isRateLive, setIsRateLive] = useState(false);
-  
   const [vouchers, setVouchers] = useState([]);
   const [isVouchersLoaded, setIsVouchersLoaded] = useState(false);
 
-  // === 🚀 Firebase 雲端資料抓取 ===
+  // === 🚀 Firebase 雲端資料抓取 (On Mount) ===
   useEffect(() => {
     const fetchCloudData = async () => {
       try {
@@ -235,32 +236,33 @@ export default function App() {
         setIsDataLoaded(true);
       }
     };
+    
     if (!isOffline) fetchCloudData();
     else setIsDataLoaded(true);
   }, [isOffline]);
 
-  // === 🎟️ Vouchers 本地存儲抓取 ===
+  // === 🎟️ Vouchers 本地存儲抓取 (維持 LocalStorage 保證隱私與離線可用) ===
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('oki-vouchers-v3');
-      if (saved) setVouchers(JSON.parse(saved));
-      else setVouchers([{ id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '範例憑證', image: null }]);
-    } catch (e) {
-      console.log('LocalStorage讀取失敗');
-    } finally {
-      setIsVouchersLoaded(true);
+    if (typeof window !== 'undefined' && window.storage) {
+      window.storage.get('oki-vouchers-v3')
+        .then(res => { if (res?.value) setVouchers(JSON.parse(res.value)); })
+        .catch(() => {}) 
+        .finally(() => setIsVouchersLoaded(true));
+    } else {
+      setIsVouchersLoaded(true); 
     }
   }, []);
 
   useEffect(() => {
     if (!isVouchersLoaded) return; 
-    try {
-      localStorage.setItem('oki-vouchers-v3', JSON.stringify(vouchers));
-    } catch (e) {
-      showToast('⚠️ 儲存空間已滿，請先刪除部分票券！');
+    if (typeof window !== 'undefined' && window.storage) {
+      window.storage.set('oki-vouchers-v3', JSON.stringify(vouchers)).catch(() => {
+        showToast('⚠️ 儲存空間可能已滿，請先刪除部分票券！');
+      });
     }
   }, [vouchers, isVouchersLoaded]);
 
+  // 天氣與匯率 API
   useEffect(() => {
     if (!isOffline) {
       fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current_weather=true')
@@ -363,6 +365,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* 🌟 滾動沙盒隔離：外層 main 鎖死為觀景窗，完全不負責滾動，100% 根絕 Android 全白死鎖問題 */}
       <main className="w-full max-w-md relative z-10 flex-1 overflow-hidden pt-safe">
         {isOffline && (
           <div className="absolute top-0 w-full bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center shadow-md z-[100]">
@@ -370,14 +373,22 @@ export default function App() {
           </div>
         )}
         
-        {/* 沙盒隔離路由，等資料載入完畢再顯示 */}
+        {/* 🌟 無阻塞式瞬間掛載 (拔除 mode="wait")，每個元件都有獨立的 overflow-y-auto 容器 */}
         {isDataLoaded ? (
-          <AnimatePresence mode="wait">
-            {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} openAdmin={() => setIsAdminPanelOpen(true)} />}
-            {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} rawItinerary={itinerary} />}
-            {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
-            {activeTab === 'emergency' && <EmergencyKit key="emergency" isOffline={isOffline} setIsOffline={setIsOffline} />}
-          </AnimatePresence>
+          <React.Fragment>
+            <AnimatePresence>
+              {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} openAdmin={() => setIsAdminPanelOpen(true)} />}
+            </AnimatePresence>
+            <AnimatePresence>
+              {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} rawItinerary={itinerary} />}
+            </AnimatePresence>
+            <AnimatePresence>
+              {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
+            </AnimatePresence>
+            <AnimatePresence>
+              {activeTab === 'emergency' && <EmergencyKit key="emergency" isOffline={isOffline} setIsOffline={setIsOffline} />}
+            </AnimatePresence>
+          </React.Fragment>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-indigo-400">
             <RefreshCw size={32} className="animate-spin mb-4" />
@@ -402,17 +413,7 @@ export default function App() {
 function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, showToast }) {
   const [activeTab, setActiveTab] = useState('editor');
   const [editingEvent, setEditingEvent] = useState(null); 
-  
-  // 初始化時為每個 event 加上 _id 以供拖曳排序使用
-  const [localItinerary, setLocalItinerary] = useState(() => {
-    const init = JSON.parse(JSON.stringify(itinerary));
-    init.forEach(day => {
-      day.events.forEach(evt => {
-        if (!evt._id) evt._id = Math.random().toString(36).substring(2, 11);
-      });
-    });
-    return init;
-  });
+  const [localItinerary, setLocalItinerary] = useState(JSON.parse(JSON.stringify(itinerary)));
 
   // === 🚀 核心：儲存至 Firebase ===
   const handleSaveAll = async () => {
@@ -462,7 +463,6 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
   const handleEventSave = (dayIdx, eventIdx, newData) => {
     const newItin = [...localItinerary];
     if (eventIdx === -1) {
-      newData._id = Math.random().toString(36).substring(2, 11);
       newItin[dayIdx].events.push(newData); 
     } else {
       newItin[dayIdx].events[eventIdx] = newData; 
@@ -475,34 +475,6 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
     const newItin = [...localItinerary];
     newItin[dayIdx].events.splice(eventIdx, 1);
     setLocalItinerary(newItin);
-  };
-
-  // 🌟 單一行程拖曳元件
-  const EventReorderItem = ({ evt, eIdx, dIdx }) => {
-    const controls = useDragControls();
-    return (
-      <Reorder.Item 
-        value={evt} 
-        dragListener={false} 
-        dragControls={controls}
-        className="bg-white/90 p-3 rounded-2xl border border-white shadow-[0_2px_8px_rgba(0,0,0,0.04)] flex items-center justify-between mb-3 relative overflow-hidden"
-      >
-        <div 
-          className="p-3 -ml-3 mr-1 text-slate-300 touch-none cursor-grab active:cursor-grabbing hover:text-indigo-400 transition-colors"
-          onPointerDown={(e) => controls.start(e)}
-        >
-          <GripVertical size={18} />
-        </div>
-        <div className="flex-1 truncate pr-2 pointer-events-none">
-          <p className="text-[10px] font-black text-indigo-500">{evt.time}</p>
-          <p className="text-sm font-bold text-slate-800 truncate">{evt.title}</p>
-        </div>
-        <div className="flex space-x-2 flex-shrink-0">
-          <button onClick={() => setEditingEvent({ dIdx, eIdx, data: evt })} className="p-2 bg-indigo-50 text-indigo-600 rounded-xl active:scale-90 transition-transform"><Edit3 size={16} /></button>
-          <button onClick={() => handleDeleteEvent(dIdx, eIdx)} className="p-2 bg-rose-50 text-rose-600 rounded-xl active:scale-90 transition-transform"><Trash2 size={16} /></button>
-        </div>
-      </Reorder.Item>
-    );
   };
 
   return (
@@ -525,33 +497,30 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
       <div className="flex-1 overflow-y-auto p-5 pb-32">
         {activeTab === 'editor' && (
           <div className="space-y-6">
-            <p className="text-xs font-bold text-slate-500 text-center -mt-2 mb-2">💡 提示：按住左側把手 <GripVertical size={12} className="inline opacity-50" /> 即可拖曳排序</p>
             {localItinerary.map((day, dIdx) => (
               <div key={dIdx} className="liquid-panel p-5">
                 <h3 className="font-black text-slate-800 mb-4 flex items-center"><MapPin size={18} className="mr-2 text-rose-500" /> Day {day.day} - {day.date}</h3>
-                
-                {/* 🌟 導入 Framer Motion Reorder 群組 */}
-                <Reorder.Group 
-                  axis="y" 
-                  values={day.events} 
-                  onReorder={(newEvents) => {
-                    const newItin = [...localItinerary];
-                    newItin[dIdx].events = newEvents;
-                    setLocalItinerary(newItin);
-                  }}
-                  className="space-y-0"
-                >
+                <div className="space-y-3">
                   {day.events.map((evt, eIdx) => (
-                    <EventReorderItem key={evt._id} evt={evt} eIdx={eIdx} dIdx={dIdx} />
+                    <div key={eIdx} className="bg-white/80 p-3 rounded-2xl border border-white shadow-sm flex items-center justify-between">
+                      <div className="flex-1 truncate pr-2">
+                        <p className="text-[10px] font-black text-indigo-500">{evt.time}</p>
+                        <p className="text-sm font-bold text-slate-800 truncate">{evt.title}</p>
+                      </div>
+                      <div className="flex space-x-2 flex-shrink-0">
+                        <button onClick={() => setEditingEvent({ dIdx, eIdx, data: evt })} className="p-2 bg-indigo-50 text-indigo-600 rounded-xl active:scale-90"><Edit3 size={16} /></button>
+                        <button onClick={() => handleDeleteEvent(dIdx, eIdx)} className="p-2 bg-rose-50 text-rose-600 rounded-xl active:scale-90"><Trash2 size={16} /></button>
+                      </div>
+                    </div>
                   ))}
-                </Reorder.Group>
-
-                <button onClick={() => setEditingEvent({ dIdx, eIdx: -1, data: { time: '', title: '', type: 'activity', icon: 'MapPin', mapQuery: '', desc: '', map: true } })} className="w-full py-3 mt-1 border-2 border-dashed border-indigo-200 rounded-2xl text-xs font-black text-indigo-500 hover:bg-indigo-50 transition-colors flex items-center justify-center">
-                  <Plus size={16} className="mr-1" /> 新增行程點
-                </button>
+                  <button onClick={() => setEditingEvent({ dIdx, eIdx: -1, data: { time: '', title: '', type: 'activity', icon: 'MapPin', mapQuery: '', desc: '', map: true } })} className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-2xl text-xs font-black text-indigo-500 hover:bg-indigo-50 transition-colors flex items-center justify-center">
+                    <Plus size={16} className="mr-1" /> 新增行程點
+                  </button>
+                </div>
               </div>
             ))}
             
+            {/* 🌟 將最新的程式碼載入雲端的捷徑按鈕 */}
             <button 
               onClick={() => {
                 setLocalItinerary(DEFAULT_ITINERARY);

@@ -84,8 +84,8 @@ const DEFAULT_ITINERARY = [
   {
     day: 4, date: '8/21', title: '鐘乳石探險、瀨長島與國際通', region: '南城 / 那霸',
     events: [
-      { time: '08:30 - 09:30', title: 'A&W 泡瀨店', type: 'food', icon: 'Coffee', mapQuery: 'A&W Awase', desc: '體驗沖繩特有的美式速食，必點招牌漢堡、圈圈薯條。', map: true },
-      { time: '09:30 - 10:15', title: '南下至南城市', type: 'transport', icon: 'Car', mapQuery: 'おきなわワールド', desc: '【車程 45分】帶著行李退房，從中部沖繩市南下。' },
+      { time: '08:30 - 09:30', title: 'A&W 泡瀨店', type: 'food', icon: 'Coffee', mapQuery: 'A&W Awase', desc: '體驗沖繩特有的美式速食，必點招牌漢堡、圈圈薯條。備案: JEF漢堡。', map: true },
+      { time: '09:30 - 10:15', title: '南下至南城市', type: 'transport', icon: 'Car', mapQuery: 'おきなわワールド', desc: '【車程 45分】帶著行李退房，從中部沖繩市南下至充滿神聖氣息的南城市。' },
       { time: '10:15 - 12:15', title: '玉泉洞 / 沖繩世界', type: 'activity', icon: 'Activity', mapQuery: 'おきなわワールド', desc: '抵達後直接進入「玉泉洞」參觀鐘乳石。11:00 左右回到王國村逛逛。', map: true },
       { time: '12:15 - 12:30', title: '離開園區', type: 'transport', icon: 'Car', mapQuery: '屋宜家', desc: '避開園區內用餐的高峰人潮。' },
       { time: '12:30 - 13:40', title: '屋宜家 (やぎや)', type: 'food', icon: 'Coffee', mapQuery: '屋宜家', desc: '【午餐】步行於百年紅瓦古民家，氣氛極佳。推薦「黑糖黃豆粉黑蜜蕎麥麵」作為甜點。', map: true },
@@ -104,7 +104,7 @@ const DEFAULT_ITINERARY = [
       { time: '08:00 - 08:45', title: '早餐與搭單軌往首里', type: 'transport', icon: 'Coffee', mapQuery: '首里城', desc: '搭乘單軌電車前往「首里站」，步行至首里城。', map: true },
       { time: '08:45 - 10:15', title: '首里城', type: 'activity', icon: 'MapIcon', mapQuery: '首里城', desc: '參觀修復工程、觀景台。', map: true },
       { time: '10:15 - 11:00', title: '步行回單軌前往牧志站', type: 'transport', icon: 'Car', mapQuery: '第一牧志公設市場', desc: '搭單軌回「牧志站」 ➔ 步行進市場。' },
-      { time: '11:00 - 13:00', title: '第一牧志公設市場', type: 'food', icon: 'Coffee', mapQuery: '第一牧志公設市場', desc: '【午餐】一樓挑海鮮，二樓代客料理。', map: true },
+      { time: '11:00 - 13:00', title: '第一牧志公設市場', type: 'food', icon: 'Coffee', mapQuery: '第一牧志公設市場', desc: '【午餐】11點抵達，一樓挑海鮮，二樓代客料理。', map: true },
       { time: '13:00 - 13:20', title: '搭計程車前往波上宮', type: 'transport', icon: 'Car', mapQuery: '波上宮', desc: '直接從市場外叫一台計程車前往波上宮（車程約 10 分鐘）。' },
       { time: '13:20 - 14:20', title: '波上宮', type: 'activity', icon: 'MapIcon', mapQuery: '波上宮', desc: '建在珊瑚礁斷崖上的琉球最高神社。買「沖繩限定」小書包御守。', map: true },
       { time: '14:20 - 14:50', title: '搭計程車前往 PARCO', type: 'transport', icon: 'Car', mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '直接搭計程車前往 PARCO CITY。' },
@@ -125,15 +125,14 @@ const DEFAULT_ITINERARY = [
 
 const TRIP_YEAR = 2026; 
 
-// 🌟 效能極致優化：移除所有位移與 Spring 運算，減少手機掉幀
+// --- 🌟 完美且無重疊的單純進入動畫 ---
 const pageTransition = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-  transition: { duration: 0.25, ease: "easeInOut" }
+  initial: { opacity: 0, y: 15 },
+  animate: { opacity: 1, y: 0 },
+  transition: { type: 'spring', damping: 25, stiffness: 220 }
 };
 
-// --- 🌟 觸覺漣漪視覺化 (減少效能開銷) ---
+// --- 🌟 觸覺漣漪視覺化 ---
 const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
   const [ripples, setRipples] = useState([]);
   const wrapperRef = useRef(null);
@@ -155,7 +154,7 @@ const LiquidRippleNode = ({ children, className = '', onClick, ...props }) => {
       {children}
       {ripples.map((r) => (
         <span key={r.id} onAnimationEnd={() => setRipples(prev => prev.filter(item => item.id !== r.id))}
-          className="absolute rounded-full bg-white/30 pointer-events-none animate-ripple"
+          className="absolute rounded-full bg-white/40 pointer-events-none animate-ripple"
           style={{ width: r.size, height: r.size, left: r.x, top: r.y }} />
       ))}
     </div>
@@ -171,7 +170,7 @@ const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
         <motion.div layoutId="activeTabBubble" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
           className="absolute inset-0 bg-indigo-50/80 rounded-[2.5rem] -z-10 shadow-[inset_0_4px_10px_rgba(255,255,255,1)] border border-indigo-100" />
       )}
-      <div className={`transition-all duration-300 ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
+      <div className={`transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1) ${isActive ? '-translate-y-2 scale-110 drop-shadow-lg text-indigo-700' : 'text-slate-400 group-hover:text-indigo-400'}`}>
         <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
       </div>
       <span className={`text-[11px] font-extrabold transition-all duration-300 ${isActive ? 'opacity-100 text-indigo-700' : 'opacity-80 text-slate-500'}`}>{label}</span>
@@ -179,11 +178,12 @@ const NavButton = ({ id, icon: Icon, label, activeTab, setActiveTab }) => {
   );
 };
 
-// --- 🌟 靜態化粒子背景 (大幅提升手機滾動效能) ---
+// --- 🌟 全息環境粒子背景 ---
 const AmbientBackground = () => (
-  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-40 bg-[#E8EEF5]">
-    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/30 to-blue-200/30 blur-[80px]" />
-    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/30 to-emerald-200/20 blur-[100px]" />
+  <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden mix-blend-screen opacity-50 bg-[#E8EEF5]">
+    <div className="absolute top-[-10%] left-[-10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-indigo-300/40 to-blue-200/40 blur-[120px] animate-pulse mix-blend-multiply" style={{animationDuration: '10s'}} />
+    <div className="absolute bottom-[-15%] right-[-15%] w-[80%] h-[80%] rounded-full bg-gradient-to-tl from-cyan-300/40 to-emerald-200/30 blur-[140px] animate-pulse mix-blend-multiply" style={{animationDuration: '14s', animationDelay: '2s'}} />
+    <div className="absolute top-[30%] left-[30%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-200/40 to-pink-200/30 blur-[100px] animate-pulse mix-blend-multiply" style={{animationDuration: '12s', animationDelay: '4s'}} />
   </div>
 );
 
@@ -238,6 +238,7 @@ export default function App() {
     try {
       const saved = localStorage.getItem('oki-vouchers-v3');
       if (saved) setVouchers(JSON.parse(saved));
+      else setVouchers([{ id: 1, title: '虎航去程 (IT230)', date: '8/18 09:20', note: '航廈 1', details: '範例憑證', image: null }]);
     } catch (e) {
       console.log('LocalStorage讀取失敗');
     } finally {
@@ -294,34 +295,42 @@ export default function App() {
       .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
       .liquid-panel {
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
-        backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.85) 0%, rgba(255, 255, 255, 0.6) 100%);
+        backdrop-filter: blur(28px) saturate(200%); -webkit-backdrop-filter: blur(28px) saturate(200%);
         border: 1px solid rgba(255, 255, 255, 0.9); border-radius: 2.5rem; 
-        box-shadow: inset 0px 8px 16px -4px rgba(255, 255, 255, 1), 0 8px 24px rgba(31, 38, 135, 0.05);
+        box-shadow: inset 0px 8px 16px -4px rgba(255, 255, 255, 1), inset 0px -6px 12px -4px rgba(0, 0, 0, 0.02), 0 12px 32px rgba(31, 38, 135, 0.08);
       }
       .chromatic-edge { position: relative; }
       .chromatic-edge::before {
         content: ''; position: absolute; inset: -1px; border-radius: inherit; z-index: -1;
         background: linear-gradient(135deg, rgba(255,0,80,0.1) 0%, rgba(255,255,255,0) 50%, rgba(0,200,255,0.1) 100%);
-        pointer-events: none;
+        box-shadow: -2px 0 6px rgba(255, 0, 80, 0.05), 2px 0 6px rgba(0, 200, 255, 0.05); pointer-events: none;
       }
-      .tension-morph { transition: transform 0.4s ease, box-shadow 0.4s ease, border-radius 0.4s ease; transform-origin: center; }
-      .tension-morph:active { transform: scale(0.96); border-radius: 3rem; }
+      .tension-morph { transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.6s ease, border-radius 0.6s ease; transform-origin: center; }
+      .tension-morph:active { transform: scale(0.94); border-radius: 3rem; box-shadow: inset 0px 4px 8px rgba(255, 255, 255, 1), 0 4px 12px rgba(31, 38, 135, 0.03); }
       .subsurface-glow {
-        box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.15), inset 0 8px 16px rgba(255, 255, 255, 1), 0 16px 32px rgba(99, 102, 241, 0.1) !important;
-        background: rgba(255, 255, 255, 0.95) !important; border-color: rgba(99, 102, 241, 0.3) !important;
+        box-shadow: inset 0 0 20px rgba(99, 102, 241, 0.2), inset 0 8px 16px rgba(255, 255, 255, 1), 0 16px 32px rgba(99, 102, 241, 0.15) !important;
+        background: rgba(255, 255, 255, 0.9) !important; border-color: rgba(99, 102, 241, 0.3) !important;
       }
+      .holo-sheen { position: relative; overflow: hidden; }
+      .holo-sheen::after {
+        content: ''; position: absolute; inset: -100%;
+        background: linear-gradient(115deg, transparent 20%, rgba(255,255,255,0.4) 40%, rgba(255,230,255,0.2) 45%, transparent 60%);
+        background-size: 200% 200%; animation: holoReflect 5s infinite linear; pointer-events: none; mix-blend-mode: overlay;
+      }
+      @keyframes holoReflect { 0% { transform: translateX(-50%) translateY(-50%) rotate(0deg); } 100% { transform: translateX(50%) translateY(50%) rotate(360deg); } }
       .gradient-frosted {
         background: linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(255,255,255,0.7));
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        backdrop-filter: blur(30px) saturate(200%); -webkit-backdrop-filter: blur(30px) saturate(200%);
+        -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%); mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
       }
       .nav-frosted {
-        background: linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0.8));
-        backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+        background: linear-gradient(to top, rgba(255,255,255,0.95), rgba(255,255,255,0.7));
+        backdrop-filter: blur(40px) saturate(250%); -webkit-backdrop-filter: blur(40px) saturate(250%);
         border-top: 1px solid rgba(255, 255, 255, 1);
       }
-      @keyframes rippleEffect { 0% { transform: scale(0); opacity: 0.6; } 100% { transform: scale(3); opacity: 0; } }
-      .animate-ripple { animation: rippleEffect 0.5s ease-out forwards; }
+      @keyframes rippleEffect { 0% { transform: scale(0); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
+      .animate-ripple { animation: rippleEffect 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
     `;
     document.head.appendChild(style);
   }, []);
@@ -331,7 +340,7 @@ export default function App() {
       <AmbientBackground />
       {toastMsg.visible && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-max liquid-panel chromatic-edge px-5 py-3 text-sm font-bold flex items-center text-indigo-900 border-white shadow-xl z-50">
-          {toastMsg.text.includes('⚠️') ? <ShieldAlert size={18} className="mr-2 text-amber-500" /> : (toastMsg.text.includes('✅') ? <CheckCircle size={18} className="mr-2 text-emerald-500" /> : <CheckCircle size={18} className="mr-2 text-indigo-500" />)} 
+          {toastMsg.text.includes('⚠️') ? <ShieldAlert size={18} className="mr-2 text-amber-500" /> : <CheckCircle size={18} className="mr-2 text-emerald-500" />} 
           {toastMsg.text}
         </div>
       )}
@@ -348,6 +357,7 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* 🌟 沙盒隔離區：無阻塞瞬間切換 */}
       <main className="w-full max-w-md relative z-10 flex-1 overflow-hidden pt-safe">
         {isOffline && (
           <div className="absolute top-0 w-full bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center shadow-md z-[100]">
@@ -491,7 +501,7 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
                         <p className="text-sm font-bold text-slate-800 truncate">{evt.title}</p>
                       </div>
                       <div className="flex space-x-1 flex-shrink-0">
-                        {/* 💡 使用實體上下按鈕取代拖曳，保證不跟手機捲動打架 */}
+                        {/* 💡 實體上下排序按鈕 */}
                         <div className="flex flex-col space-y-1 mr-1">
                            <button disabled={eIdx === 0} onClick={() => moveEvent(dIdx, eIdx, 'up')} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg disabled:opacity-30 active:scale-90"><ArrowUp size={14} /></button>
                            <button disabled={eIdx === day.events.length - 1} onClick={() => moveEvent(dIdx, eIdx, 'down')} className="p-1.5 bg-slate-100 text-slate-500 rounded-lg disabled:opacity-30 active:scale-90"><ArrowDown size={14} /></button>
@@ -550,9 +560,28 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
               <button onClick={() => setEditingEvent(null)} className="p-2 bg-slate-100 rounded-full active:scale-90"><X size={20} /></button>
             </div>
             <div className="p-5 overflow-y-auto space-y-4 pb-32">
-              <input type="text" placeholder="時間 (例: 09:00 - 10:00)" value={editingEvent.data.time} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, time: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
-              <input type="text" placeholder="標題" value={editingEvent.data.title} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, title: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              <input type="text" placeholder="時間 (例: 09:00 - 10:00)" value={editingEvent.data.time || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, time: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              <input type="text" placeholder="標題" value={editingEvent.data.title || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, title: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              
+              {/* 💡 行程類型選擇 (修復：現在可以手動改成車程，啟用導航路線！) */}
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-2 block">行程類型 (決定下方按鈕動作)</label>
+                <select 
+                  value={editingEvent.data.type || 'activity'} 
+                  onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, type: e.target.value}})} 
+                  className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300 appearance-none"
+                >
+                  <option value="activity">一般活動 (單點地標)</option>
+                  <option value="transport">車程/交通 (自動啟用 A to B 導航路線)</option>
+                  <option value="food">餐飲美食</option>
+                  <option value="accommodation">住宿</option>
+                  <option value="shopping">購物採買</option>
+                </select>
+              </div>
+
               <textarea placeholder="詳細描述 (支援換行)" value={editingEvent.data.desc || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, desc: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300 h-32" />
+              
+              {/* 💡 Google Map 搜尋字詞欄位 */}
               <input type="text" placeholder="Google Map 搜尋字詞 (影響導航與地圖位置)" value={editingEvent.data.mapQuery || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, mapQuery: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
               
               <div>
@@ -589,7 +618,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
   const [clickCount, setClickCount] = useState(0);
   const handleTitleClick = () => {
     setClickCount(c => c + 1);
-    if (clickCount >= 9) {
+    if (clickCount >= 9) { // 9 + 1 就是 10 次
       openAdmin();
       setClickCount(0);
     }
@@ -598,7 +627,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
   return (
     <motion.div
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="pb-6 relative z-10 px-5 pt-8 space-y-6">
         <div className="flex items-end justify-between px-2 mb-2">
@@ -732,21 +761,21 @@ function CountdownBanner({ nextEvent }) {
 }
 
 // ==========================================
-// 2. 行程嚮導與地圖 (Itinerary) - 防呆與安全解析
+// 2. 行程嚮導與地圖 (Itinerary) - 🌟 防彈級解析 + 鏤空玻璃還原 + A to B 導航
 // ==========================================
 function Itinerary({ showToast, rawItinerary }) {
   const [activeDay, setActiveDay] = useState(1);
   const [activeEventIndex, setActiveEventIndex] = useState(0);
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
   
+  // 🌟 使用 Framer Motion 綁定滾動，打造完美的毛玻璃地圖淡出特效
   const scrollRef = useRef(null);
-  // 🌟 效能極致優化：僅對 Header 套用 useScroll，並使用 translateY 取代 height 動畫，防掉幀
   const { scrollY } = useScroll({ container: scrollRef });
   const tabsY = useTransform(scrollY, [0, 60], [0, -30]);
   const tabsOpacity = useTransform(scrollY, [0, 40], [1, 0]);
   const tabsPointerEvents = useTransform(scrollY, (y) => y > 30 ? 'none' : 'auto');
 
-  // 安全轉換，防空值當機
+  // 防彈解析 (Bulletproof Parsing)：解決舊資料缺少欄位導致白畫面的漏洞
   const processedItinerary = useMemo(() => {
     if (!rawItinerary || !Array.isArray(rawItinerary)) return [];
     return rawItinerary.map(dayData => {
@@ -796,14 +825,15 @@ function Itinerary({ showToast, rawItinerary }) {
       id="itinerary-scroll"
       ref={scrollRef}
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="relative">
-        {/* 🌟 鏤空玻璃面板 (硬體加速隔離，效能極高) */}
-        <div className="sticky top-0 w-full z-40 bg-white/30 backdrop-blur-xl border-b border-white/40 shadow-[0_10px_30px_rgba(0,0,0,0.05)] transform-gpu">
+        {/* 🌟 鏤空玻璃面板 (完美還原地圖在下方被模糊蓋住的深度特效) */}
+        <div className="sticky top-0 w-full z-40 bg-white/40 backdrop-blur-xl border-b border-white/60 shadow-[0_10px_30px_rgba(0,0,0,0.08)] transform-gpu">
           <CountdownBanner nextEvent={nextUpcomingEvent} />
 
-          <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom">
+          {/* 漸層遮罩讓地圖底部自然融入玻璃 */}
+          <div className="w-full h-48 bg-slate-300 relative flex-shrink-0" style={{ WebkitMaskImage: 'linear-gradient(to bottom, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 100%)' }}>
             <iframe title="Google Map" width="100%" height="100%" style={{ border: 0 }} loading="lazy" allowFullScreen referrerPolicy="no-referrer-when-downgrade" src={`https://maps.google.com/maps?q=${encodeURIComponent(activeMapQuery)}&t=&z=14&ie=UTF8&iwloc=&output=embed`} ></iframe>
             <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,1)] pointer-events-none"></div>
           </div>
@@ -841,17 +871,30 @@ function Itinerary({ showToast, rawItinerary }) {
 
           <motion.div
             key={activeDay}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
             className="space-y-5"
           >
             {events.map((evt, idx) => {
               const isActive = safeIndex === idx;
-              const mapData = {
-                 url: evt.type === 'transport' ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title || '')}` : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title || '')}`
-              };
               const IconComp = evt.iconComp;
+              
+              // 💡 A to B 智慧路線導航判斷邏輯
+              let routeUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(evt.mapQuery || evt.title || '')}`;
+              if (evt.type === 'transport') {
+                let originQuery = '';
+                if (idx > 0) {
+                   // 自動抓取上一個行程點作為起點
+                   originQuery = events[idx - 1].mapQuery || events[idx - 1].title;
+                }
+                if (originQuery) {
+                   routeUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(originQuery)}&destination=${encodeURIComponent(evt.mapQuery || evt.title || '')}`;
+                } else {
+                   // 若為每天第一站，則僅導航至目的地 (讓 Google Map 使用當下定位)
+                   routeUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(evt.mapQuery || evt.title || '')}`;
+                }
+              }
 
               return (
                 <LiquidRippleNode 
@@ -898,7 +941,7 @@ function Itinerary({ showToast, rawItinerary }) {
                               <Fuel size={18} className="mr-2" /> 尋找周邊加油站 (滿油還車)
                             </a>
                           )}
-                          <a href={mapData.url} target="_blank" rel="noreferrer"
+                          <a href={routeUrl} target="_blank" rel="noreferrer"
                             onClick={() => showToast('即將跳轉至 Google Maps...')}
                             className={`w-full text-sm font-black py-4 rounded-[1.5rem] flex items-center justify-center transition-transform active:scale-95 shadow-[inset_0_4px_8px_rgba(255,255,255,0.9),0_4px_12px_rgba(0,0,0,0.05)] border
                               ${evt.type === 'transport' ? 'bg-indigo-50/90 text-indigo-700 border-indigo-200' : 'bg-white text-slate-800 border-white'}`}>
@@ -965,7 +1008,7 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
   return (
     <motion.div
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="p-5 pt-8 space-y-6 relative z-10">
         <AnimatePresence mode="wait">
@@ -1032,8 +1075,8 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
 
         <AnimatePresence>
           {selectedVoucher && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center p-5 bg-slate-900/60">
-              <motion.div initial={{ scale: 0.9, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 50 }} transition={{ type: "spring", bounce: 0.3, duration: 0.6 }} className="bg-white/95 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[60] flex items-center justify-center p-5 bg-slate-900/60 backdrop-blur-md">
+              <motion.div initial={{ scale: 0.9, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 50 }} transition={{ type: "spring", bounce: 0.3, duration: 0.6 }} className="bg-white/90 backdrop-blur-3xl w-full max-w-sm rounded-[3rem] shadow-2xl overflow-hidden relative flex flex-col max-h-[85vh] border border-white/80">
                 <div className="p-5 flex justify-between items-center text-white bg-gradient-to-r from-indigo-500 to-purple-600 shadow-sm z-10 chromatic-edge">
                   <h3 className="font-black text-lg">憑證檢視</h3>
                   <button onClick={() => setSelectedVoucher(null)} className="p-2 bg-white/20 rounded-full active:scale-90 transition-transform tension-morph"><X size={20}/></button>
@@ -1071,7 +1114,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
   return (
     <motion.div
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="p-5 pt-8 space-y-6 relative z-10">
         

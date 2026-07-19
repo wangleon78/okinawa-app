@@ -125,7 +125,7 @@ const DEFAULT_ITINERARY = [
 
 const TRIP_YEAR = 2026; 
 
-// --- 🌟 效能極致優化：移除所有位移與 Spring 運算，減少手機掉幀 ---
+// 🌟 效能極致優化：移除所有位移與 Spring 運算，減少手機掉幀
 const pageTransition = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -553,7 +553,7 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
               <input type="text" placeholder="時間 (例: 09:00 - 10:00)" value={editingEvent.data.time} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, time: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
               <input type="text" placeholder="標題" value={editingEvent.data.title} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, title: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
               <textarea placeholder="詳細描述 (支援換行)" value={editingEvent.data.desc || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, desc: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300 h-32" />
-              <input type="text" placeholder="Google Map 搜尋字詞" value={editingEvent.data.mapQuery || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, mapQuery: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
+              <input type="text" placeholder="Google Map 搜尋字詞 (影響導航與地圖位置)" value={editingEvent.data.mapQuery || ''} onChange={e => setEditingEvent({...editingEvent, data: {...editingEvent.data, mapQuery: e.target.value}})} className="w-full bg-slate-50 p-4 rounded-2xl font-bold outline-none focus:ring-2 focus:ring-indigo-300" />
               
               <div>
                 <label className="text-xs font-bold text-slate-500 mb-2 block">圖標選擇</label>
@@ -585,10 +585,11 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
   const [jpyInput, setJpyInput] = useState('');
   const [showReturnFlight, setShowReturnFlight] = useState(false);
   
+  // 🌟 彩蛋：連點標題 10 次開啟後台防誤觸
   const [clickCount, setClickCount] = useState(0);
   const handleTitleClick = () => {
     setClickCount(c => c + 1);
-    if (clickCount >= 4) {
+    if (clickCount >= 9) {
       openAdmin();
       setClickCount(0);
     }
@@ -739,10 +740,10 @@ function Itinerary({ showToast, rawItinerary }) {
   const [nextUpcomingEvent, setNextUpcomingEvent] = useState(null);
   
   const scrollRef = useRef(null);
+  // 🌟 效能極致優化：僅對 Header 套用 useScroll，並使用 translateY 取代 height 動畫，防掉幀
   const { scrollY } = useScroll({ container: scrollRef });
-  const tabsHeight = useTransform(scrollY, [0, 60], [80, 0]);
+  const tabsY = useTransform(scrollY, [0, 60], [0, -30]);
   const tabsOpacity = useTransform(scrollY, [0, 40], [1, 0]);
-  const tabsY = useTransform(scrollY, [0, 60], [0, -20]);
   const tabsPointerEvents = useTransform(scrollY, (y) => y > 30 ? 'none' : 'auto');
 
   // 安全轉換，防空值當機
@@ -798,7 +799,8 @@ function Itinerary({ showToast, rawItinerary }) {
       initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
     >
       <div className="relative">
-        <div className="sticky top-0 w-full z-40 gradient-frosted shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60">
+        {/* 🌟 鏤空玻璃面板 (硬體加速隔離，效能極高) */}
+        <div className="sticky top-0 w-full z-40 bg-white/30 backdrop-blur-xl border-b border-white/40 shadow-[0_10px_30px_rgba(0,0,0,0.05)] transform-gpu">
           <CountdownBanner nextEvent={nextUpcomingEvent} />
 
           <div className="w-full h-48 bg-slate-300 relative flex-shrink-0 mask-image-bottom">
@@ -806,8 +808,8 @@ function Itinerary({ showToast, rawItinerary }) {
             <div className="absolute inset-0 shadow-[inset_0_0_20px_rgba(255,255,255,1)] pointer-events-none"></div>
           </div>
 
-          <motion.div style={{ height: tabsHeight, opacity: tabsOpacity, y: tabsY, pointerEvents: tabsPointerEvents }} className="overflow-hidden">
-            <div className="px-4 py-2 pb-4 flex space-x-3 overflow-x-auto scrollbar-hide pt-2">
+          <motion.div style={{ opacity: tabsOpacity, y: tabsY, pointerEvents: tabsPointerEvents }} className="absolute bottom-0 w-full translate-y-1/2">
+            <div className="px-4 pb-2 flex space-x-3 overflow-x-auto scrollbar-hide">
               {processedItinerary.map((data) => {
                 const isActive = activeDay === data.day;
                 return (
@@ -818,12 +820,9 @@ function Itinerary({ showToast, rawItinerary }) {
                       setActiveEventIndex(0); 
                       document.getElementById('itinerary-scroll')?.scrollTo({ top: 0, behavior: 'smooth' }); 
                     }}
-                    className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-300 border border-white relative
-                      ${isActive ? 'subsurface-glow scale-105' : 'bg-white/80 text-slate-600 shadow-[inset_0_4px_8px_rgba(255,255,255,1)]'}`}
+                    className={`flex-shrink-0 px-5 py-3 rounded-[2rem] flex flex-col items-center min-w-[90px] transition-all duration-300 border border-white/60 relative
+                      ${isActive ? 'bg-white/90 shadow-[0_8px_16px_rgba(0,0,0,0.1),inset_0_4px_10px_rgba(255,255,255,1)] scale-105 z-10' : 'bg-white/40 backdrop-blur-md text-slate-600 shadow-sm'}`}
                   >
-                    {isActive && (
-                      <motion.div layoutId="activeDayTab" transition={{ type: "spring", bounce: 0.2, duration: 0.6 }} className="absolute inset-0 bg-gradient-to-br from-white/60 to-indigo-50/60 rounded-[2rem] -z-10 shadow-inner" />
-                    )}
                     <span className={`text-[11px] font-black uppercase mb-0.5 tracking-widest ${isActive ? 'text-indigo-600' : 'text-slate-500'}`}>Day {data.day}</span>
                     <span className={`text-sm font-black ${isActive ? 'text-indigo-900' : 'text-slate-700'}`}>{data.date}</span>
                   </LiquidRippleNode>
@@ -833,7 +832,7 @@ function Itinerary({ showToast, rawItinerary }) {
           </motion.div>
         </div>
 
-        <div className="p-5 space-y-5 pb-10 relative z-10 overflow-hidden">
+        <div className="p-5 space-y-5 pb-10 pt-16 relative z-10 overflow-hidden">
           <div className="mb-2 px-2">
              <h2 className="text-xl font-black text-slate-800 flex items-center drop-shadow-sm">
                <MapPin size={22} className="mr-2 text-rose-500 drop-shadow-md" /> {dayData.region || '載入中...'}

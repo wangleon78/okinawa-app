@@ -41,8 +41,8 @@ const DEFAULT_ITINERARY = [
     events: [
       { time: '09:20 - 11:30', title: '降落那霸機場、出關與取車', type: 'transport', icon: 'PlaneLanding', mapQuery: '那霸機場', desc: '去程 IT230 第一航廈 09:20 落地。辦理入境手續並前往租車營業所完成取車作業。' },
       { time: '11:30 - 12:20', title: '沿海岸公路前往北谷町', type: 'transport', icon: 'Car', mapQuery: '暖暮 沖縄美浜店', desc: '【車程 50分】離開那霸市區，沿著美麗的海岸公路直奔北谷町。' },
-      { time: '12:20 - 13:20', title: '暖暮拉麵 (沖繩北谷店)', type: 'food', icon: 'Coffee', mapQuery: '北谷町宮城2-123', desc: '【午餐】剛拿到車的第一餐，享受曾擊敗一蘭的九州濃郁豚骨拉麵，吃飽後可以看海。', map: true },
-      { time: '13:20 - 14:00', title: '沿國道 58 號往北開至恩納村', type: 'transport', icon: 'Car', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '【車程 40分】吃飽喝足，繼續沿著國道 58 號往北開至恩納村的飯店。' },
+      { time: '12:20 - 13:20', title: '暖暮拉麵 (沖繩北谷店)', type: 'food', icon: 'Coffee', mapQuery: '北谷町宮城2-123', desc: '【午餐】剛拿到車的第一餐，享受曾擊敗一蘭的九州濃郁豚骨拉麵，吃飽後可以在旁邊的砂邊海堤稍微拍個照看海。', map: true },
+      { time: '13:20 - 14:00', title: '沿國道 58 號往北開至恩納村', type: 'transport', icon: 'Car', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '【車程 40分】繼續沿著國道 58 號往北開至恩納村。' },
       { time: '14:20 - 15:00', title: 'Rizzan Sea Park Hotel', type: 'accommodation', icon: 'Bed', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '抵達 Rizzan Sea Park Hotel 辦理 Check-in，若來不及可先寄放行李。', map: true },
       { time: '15:30 - 17:30', title: '飯店專屬沙灘浮潛', type: 'activity', icon: 'Activity', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '參加飯店專屬沙灘浮潛（已預約 15:30）。換上裝備，直接從沙灘下水享受清澈海域。', map: true },
       { time: '17:30 - 20:00', title: '飯店內享用高級晚餐', type: 'food', icon: 'Coffee', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '梳洗後，於飯店內享用高級晚餐與設施。' }
@@ -51,36 +51,32 @@ const DEFAULT_ITINERARY = [
   {
     day: 2, date: '8/19', title: '北部生態、阿古豬與商場', region: '本部 / 名護',
     events: [
-      { time: '07:00 - 08:00', title: '飯店自助餐', type: 'food', icon: 'Coffee', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '享用飯店提供的豐富自助早餐，儲備一天活力。' },
-      { time: '08:30 - 09:30', title: '退房，開往北部', type: 'transport', icon: 'Car', mapQuery: '沖繩美麗海水族館', desc: '【車程 60分】辦理 Check-out，行李上車，開往北部。' },
-      { time: '09:30 - 11:30', title: '沖繩美麗海水族館', type: 'activity', icon: 'Activity', mapQuery: '沖繩美麗海水族館', desc: '黑潮之海必看、大鯨鯊。海豚表演可能來不及，可去咖啡廳「Ocean Blue」與看鯨鯊餵食秀。', map: true },
-      { time: '11:30 - 12:00', title: '前往古宇利島', type: 'transport', icon: 'Car', mapQuery: 'KOURI SHRIMP', desc: '【車程 30分】開車行駛壯麗的跨海大橋前往古宇利島，途中強烈建議先用手機點蝦蝦飯。' },
-      { time: '12:00 - 13:00', title: 'KOURI SHRIMP (蝦蝦飯)', type: 'food', icon: 'Coffee', mapQuery: 'KOURI SHRIMP', desc: '【午餐 / 必吃】古宇利島超人氣蝦蝦飯，蒜香濃郁，搭配海景絕佳。', map: true },
-      { time: '13:00 - 14:00', title: '古宇利島觀光', type: 'activity', icon: 'MapIcon', mapQuery: '古宇利島', desc: '開車環島看古宇利大橋。備案：心型岩若行程 delay 可選擇不看。', map: true },
-      { time: '14:00 - 14:30', title: '前往名護市區', type: 'transport', icon: 'Car', mapQuery: 'ネオパークオキナワ', desc: '【車程 30分】告別海景，開往名護市區。' },
-      { time: '14:30 - 16:30', title: 'NEO Park (名護動植物園)', type: 'activity', icon: 'Activity', mapQuery: 'ネオパークオキナワ', desc: '開放式柵欄動物園。必看水豚、羊駝、天竺鼠，遊園車、紅熊貓咖啡館。', map: true },
-      { time: '16:45 - 17:45', title: '御菓子御殿 名護店', type: 'shopping', icon: 'ShoppingBag', mapQuery: '御菓子御殿 名護店', desc: '【北部伴手禮採買】必買：元祖紅芋塔、紅包、紅月夜、鹽芝麻金楚糕。', map: true },
+      { time: '06:30 - 07:30', title: '飯店自助餐', type: 'food', icon: 'Coffee', mapQuery: 'Rizzan Sea Park Hotel Tancha Bay', desc: '享用飯店提供的豐富自助早餐，儲備一天活力。' },
+      { time: '08:00 - 09:00', title: '退房，開往北部', type: 'transport', icon: 'Car', mapQuery: '沖繩美麗海水族館', desc: '【車程 60分】辦理 Check-out，行李上車，開往北部。' },
+      { time: '09:00 - 12:00', title: '沖繩美麗海水族館', type: 'activity', icon: 'Activity', mapQuery: '沖繩美麗海水族館', desc: '黑潮之海必看、大鯨鯊。海豚表演 10:30。可去咖啡廳「Ocean Blue」與看鯨鯊餵食秀（建議先點餐）。', map: true },
+      { time: '12:00 - 12:30', title: '前往古宇利島', type: 'transport', icon: 'Car', mapQuery: 'KOURI SHRIMP', desc: '【車程 30分】開車行駛壯麗的跨海大橋前往古宇利島，途中強烈建議先用手機點蝦蝦飯。' },
+      { time: '12:30 - 13:30', title: 'KOURI SHRIMP (蝦蝦飯)', type: 'food', icon: 'Coffee', mapQuery: 'KOURI SHRIMP', desc: '【午餐 / 必吃】古宇利島超人氣蝦蝦飯，蒜香濃郁，搭配海景絕佳。', map: true },
+      { time: '13:30 - 16:30', title: '古宇利島深度遊', type: 'activity', icon: 'MapIcon', mapQuery: '古宇利島', desc: '古宇利大橋與海灘：在橋頭附近的停車場停留，拍攝跨海大橋絕景。\n古宇利海洋塔：搭乘無人自動駕駛車上山，從高處俯瞰漸層的「古宇利藍」海景與敲鐘。\n心型岩 (Heart Rock)：開車至島嶼北側，步行一段天然礁岩小徑抵達沙灘看心型岩。', map: true },
+      { time: '16:30 - 16:50', title: '前往名護市區', type: 'transport', icon: 'Car', mapQuery: '名護市', desc: '【車程 20分】離開古宇利島，開往名護市區。' },
+      { time: '17:00 - 17:50', title: '御菓子御殿 名護店', type: 'shopping', icon: 'ShoppingBag', mapQuery: '御菓子御殿 名護店', desc: '【北部伴手禮採買】必買：元祖紅芋塔、紅包、紅月夜、鹽芝麻金楚糕、水果風味點心、沖繩黑糖。', map: true },
+      { time: '17:50 - 17:55', title: '前往百年古家 大家', type: 'transport', icon: 'Car', mapQuery: '百年古家 大家', desc: '【車程 5分】前往晚餐地點。' },
       { time: '18:00 - 20:00', title: '百年古家 大家 (Ufuya)', type: 'food', icon: 'Coffee', mapQuery: '百年古家 大家', desc: '【晚餐 / 已訂位】享用阿古豬。一個月前訂，涮涮鍋、特色飲品、泡芙。氣氛極佳！', map: true },
-      { time: '20:00 - 21:00', title: '南下至 SPORTS DEPO', type: 'transport', icon: 'Car', mapQuery: 'SPORTS DEPO 泡瀬店', desc: '【車程 60分】高速公路南下沖繩市 Depo Sports (運動用品)。' },
-      { time: '21:00 - 21:30', title: 'Okinawa Grand Mer Resort', type: 'accommodation', icon: 'Bed', mapQuery: 'Okinawa Grand Mer Resort', desc: '抵達 Okinawa Grand Mer Resort 辦理 Check-in。', map: true },
-      { time: '21:30 - 23:00', title: 'MaxValu 超市', type: 'shopping', icon: 'ShoppingBag', mapQuery: 'MaxValu 泡瀬店', desc: '車程 5-10 分鐘。晚上八點後有半價熟食，體驗日本在地人深夜超市採買。', map: true }
+      { time: '20:00 - 21:00', title: '南下至 Okinawa Grand Mer Resort', type: 'transport', icon: 'Car', mapQuery: 'Okinawa Grand Mer Resort', desc: '【車程 60分】高速公路南下，抵達飯店辦理 Check-in。' },
+      { time: '21:00 - 22:30', title: 'MaxValu 超市', type: 'shopping', icon: 'ShoppingBag', mapQuery: 'MaxValu 泡瀬店', desc: '【夜間活動】車程 5-10 分鐘。晚上八點後有半價熟食，體驗日本在地人深夜超市採買，順便買隔日早餐。結束後回飯店。', map: true }
     ]
   },
   {
-    day: 3, date: '8/20', title: '海中展望、海葡萄與美國村', region: '西海岸 / 北谷',
+    day: 3, date: '8/20', title: '萬座毛、海葡萄與美國村', region: '西海岸 / 北谷',
     events: [
-      { time: '08:00 - 09:00', title: 'The Rose Garden', type: 'food', icon: 'Coffee', mapQuery: 'The Rose Garden Okinawa', desc: '從飯店出發開車十分鐘，享用豐盛美味的美式早午餐。', map: true },
-      { time: '09:00 - 09:50', title: '開往部瀨名', type: 'transport', icon: 'Car', mapQuery: '部瀬名海中公園', desc: '【車程 50分】吃飽後驅車前往部瀨名海中公園。' },
-      { time: '09:50 - 11:20', title: '部瀨名海中公園', type: 'activity', icon: 'Activity', mapQuery: '部瀬名海中公園', desc: '一到現場先看好玻璃船最近的班次直接劃位。搭乘免費接駁車、海中展望塔看熱帶魚。', map: true },
-      { time: '11:20 - 11:45', title: '往南前往元祖海葡萄', type: 'transport', icon: 'Car', mapQuery: '元祖海ぶどう 本店', desc: '【車程 25分】沿國道 58 號往南前往元祖海葡萄。' },
-      { time: '11:45 - 13:00', title: '元祖海葡萄總店', type: 'food', icon: 'Coffee', mapQuery: '元祖海ぶどう 本店', desc: '【午餐】必點海葡萄蓋飯、豪華海鮮丼飯，口感波波脆脆超特別。', map: true },
-      { time: '13:00 - 13:10', title: '往北開前往萬座毛', type: 'transport', icon: 'Car', mapQuery: '萬座毛', desc: '【車程 10分】往北開一小段前往萬座毛。' },
-      { time: '13:10 - 14:00', title: '萬座毛', type: 'activity', icon: 'MapIcon', mapQuery: '萬座毛', desc: '看斷崖絕景與拍照 (風很大)。停「遊客中心」免費。', map: true },
-      { time: '14:00 - 14:50', title: '沿國道 58 號直奔美國村', type: 'transport', icon: 'Car', mapQuery: '北谷公園サンセットビーチ', desc: '【車程 50分】直奔美國村導航並停放在靠海邊的日落海灘免費停車場。' },
-      { time: '14:50 - 16:30', title: '美國村逛街 (美式復古區)', type: 'activity', icon: 'Activity', mapQuery: '美浜アメリカンビレッジ', desc: '❶ American Depot：美式復古風、二手古著。\n❷ Depot Island：E棟「OKICHU」客製化沙灘拖鞋 ➔ Distortion Seaside 4樓「天使之翼」打卡。', map: true, parking: { name: '北谷町營公共停車場', fee: '免費 (位位難求，需耐心尋找)' } },
-      { time: '16:30 - 18:20', title: '美國村晚餐', type: 'food', icon: 'Coffee', mapQuery: 'Taco Rice Cafe Kijimuna Depot Island', desc: '【晚餐】吃「Taco Rice Cafe Kijimuna」招牌歐姆蛋塔可飯，或「グルメ迴轉壽司市場」。', map: true },
-      { time: '18:20 - 19:30', title: '日落海灘與夕陽步道', type: 'activity', icon: 'MapIcon', mapQuery: 'Zhyvago Coffee Works Okinawa', desc: '19:15 日落。沿著北谷日落步道走到日落海灘。買工業風咖啡或冰淇淋看夕陽。', map: true },
-      { time: '22:00', title: '返回飯店', type: 'accommodation', icon: 'Bed', mapQuery: 'Okinawa Grand Mer Resort', desc: '返回飯店休息 (有溫泉需另收費)。' }
+      { time: '08:30 - 09:40', title: '飯店早餐', type: 'food', icon: 'Coffee', mapQuery: 'Okinawa Grand Mer Resort', desc: '早餐在飯店吃前一天在超市買的熟食與麵包。', map: true },
+      { time: '09:40 - 10:30', title: '開往萬座毛', type: 'transport', icon: 'Car', mapQuery: '萬座毛', desc: '【車程 50分】從飯店出發，一路向北開往萬座毛。' },
+      { time: '10:30 - 11:00', title: '萬座毛', type: 'activity', icon: 'Activity', mapQuery: '萬座毛', desc: '看斷崖絕景與拍照 (風很大)。停「遊客中心」免費。', map: true },
+      { time: '11:00 - 12:00', title: '元祖海葡萄總店', type: 'food', icon: 'Coffee', mapQuery: '元祖海ぶどう 本店', desc: '【午餐】必點海葡萄蓋飯、豪華海鮮丼飯，口感波波脆脆超特別。', map: true },
+      { time: '12:00 - 12:45', title: '沿國道 58 號直奔美國村', type: 'transport', icon: 'Car', mapQuery: '北谷公園サンセットビーチ', desc: '【車程 45分】吃飽後，導航並停放在靠海邊的「北谷公園(日落海灘)免費停車場」或 Aeon 旁邊的大型公共停車場。' },
+      { time: '12:45 - 16:30', title: '美國村逛街 (美式復古區)', type: 'activity', icon: 'Activity', mapQuery: '美浜アメリカンビレッジ', desc: '❶ American Depot：逛二手古著、美式玩具雜貨與大型潮牌服飾店 SOHO。\n❷ Depot Island (A~E棟迷宮)：E棟「OKICHU」客製化沙灘拖鞋 ➔ 尋找 A棟超好拍的「貨車彩繪牆」。\n❸ Distortion Seaside Building：搭電梯直上 4 樓，找 IG 網美打卡點「天使之翼」。', map: true, parking: { name: '北谷町營公共停車場', fee: '免費 (位位難求，需耐心尋找)' } },
+      { time: '16:30 - 18:20', title: '美國村晚餐', type: 'food', icon: 'Coffee', mapQuery: 'Taco Rice Cafe Kijimuna Depot Island', desc: '【晚餐】前往 Depot Island C 棟 2 樓吃「Taco Rice Cafe Kijimuna」招牌歐姆蛋塔可飯，或去「グルメ迴轉壽司市場」抽號碼牌。', map: true },
+      { time: '18:20 - 19:30', title: '日落海灘與夕陽步道', type: 'activity', icon: 'MapIcon', mapQuery: 'Zhyvago Coffee Works Okinawa', desc: '19:15 日落。往海邊移動，沿著北谷日落步道走到日落海灘。沿路買「Zhyvago Coffee Works」工業風咖啡或「Blue Seal」坐在海堤上吹海風看夕陽。', map: true },
+      { time: '19:30 - 20:10', title: '返回飯店', type: 'accommodation', icon: 'Bed', mapQuery: 'Okinawa Grand Mer Resort', desc: '【車程 40分】驅車返回飯店休息。' }
     ]
   },
   {
@@ -88,37 +84,37 @@ const DEFAULT_ITINERARY = [
     events: [
       { time: '08:30 - 09:30', title: 'A&W 泡瀨店', type: 'food', icon: 'Coffee', mapQuery: 'A&W Awase', desc: '體驗沖繩特有的美式速食，必點招牌漢堡、圈圈薯條 (Drive in 點餐超有特色)。備案: JEF漢堡。', map: true },
       { time: '09:30 - 10:15', title: '南下至南城市', type: 'transport', icon: 'Car', mapQuery: 'おきなわワールド', desc: '【車程 45分】帶著行李退房，從中部沖繩市南下至充滿神聖氣息的南城市。' },
-      { time: '10:15 - 12:15', title: '玉泉洞 / 沖繩世界', type: 'activity', icon: 'Activity', mapQuery: 'おきなわワールド', desc: '抵達後直接進入「玉泉洞」參觀鐘乳石。11:00 左右回到王國村逛逛。', map: true },
+      { time: '10:15 - 12:15', title: '玉泉洞 / 沖繩世界', type: 'activity', icon: 'Activity', mapQuery: 'おきなわワールド', desc: '抵達後直接進入「玉泉洞」參觀鐘乳石。11:00 左右回到王國村逛逛（若想看 10:30 太鼓表演可稍作停留）經過名產區可試喝毒蛇酒或買伴手禮。', map: true },
       { time: '12:15 - 12:30', title: '離開園區', type: 'transport', icon: 'Car', mapQuery: '屋宜家', desc: '避開園區內用餐的高峰人潮。' },
       { time: '12:30 - 13:40', title: '屋宜家 (やぎや)', type: 'food', icon: 'Coffee', mapQuery: '屋宜家', desc: '【午餐】步行於百年紅瓦古民家，氣氛極佳。推薦「黑糖黃豆粉黑蜜蕎麥麵」作為甜點。', map: true },
       { time: '13:40 - 14:30', title: '前往瀨長島', type: 'transport', icon: 'Car', mapQuery: '瀨長島 Umikaji Terrace', desc: '【車程 50分】由南向北沿著海岸線行駛，前往看海秘境瀨長島。' },
-      { time: '14:30 - 16:00', title: '瀨長島 (下午茶)', type: 'activity', icon: 'MapIcon', mapQuery: '瀨長島 Umikaji Terrace', desc: '逛瀨長島展望台、Umikaji Terrace 小希臘商場。吃「幸福鬆餅(一到先寫預約表)」、看海景。', map: true },
+      { time: '14:30 - 16:00', title: '瀨長島 (下午茶)', type: 'activity', icon: 'MapIcon', mapQuery: '瀨長島 Umikaji Terrace', desc: '逛瀨長島展望台、Umikaji Terrace 小希臘商場。吃「幸福鬆餅(一到先寫預約表)」、看飛機起降與海景 (看完可先走)。', map: true },
       { time: '16:15 - 16:45', title: '進入那霸市區', type: 'transport', icon: 'Car', mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '【車程 30分】結束海岸線行程，驅車進入車水馬龍的那霸市中心。' },
       { time: '16:45 - 17:10', title: 'Almont Hotel 寄放行李', type: 'accommodation', icon: 'Bed', mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '抵達位於縣廳前站的飯店先行寄放行李，減輕負擔以利後續還車。', map: true },
-      { time: '17:10 - 17:40', title: '市區營業所還車', type: 'transport', icon: 'Car', mapQuery: '那霸市', desc: '前往那霸市區營業所完成還車手續，請記得預留把油箱加滿的時間。', gasStation: true },
-      { time: '17:40 - 21:00', title: '國際通深度遊與晚餐', type: 'food', icon: 'Coffee', mapQuery: '國際通', desc: '晚餐吃傑克牛排(先抽號碼牌)。\n💡【夜生活清單】Blue Seal、豬肉蛋飯糰、屋台村、MEGA Donki、Calbee+紅芋薯條、鹽屋。', map: true },
-      { time: '22:00', title: '返回飯店休息', type: 'accommodation', icon: 'Bed', mapQuery: 'Almont Hotel Naha-Kenchomae' }
+      { time: '17:10 - 17:40', title: '市區營業所還車', type: 'transport', icon: 'Car', mapQuery: '那霸市', desc: '前往那霸市區營業所完成還車手續，預留加油時間。Cheap Car Hire Okinawa [Okinawa Tahirai] たびらい。', gasStation: true },
+      { time: '17:40 - 21:00', title: '國際通深度遊與晚餐', type: 'food', icon: 'Coffee', mapQuery: '國際通', desc: '晚餐吃傑克牛排(先抽號碼牌)。\n💡【夜生活清單】Blue Seal、豬肉蛋飯糰、屋台村、MEGA Donki、Calbee+紅芋薯條、鹽屋雪鹽冰淇淋、RYUBO百貨、暖暮/琉家拉麵、ふくぎや年輪蛋糕。', map: true },
+      { time: '22:00', title: '返回飯店休息', type: 'accommodation', icon: 'Bed', mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '返回飯店休息。記得提前預約隔天早上的計程車！' }
     ]
   },
   {
     day: 5, date: '8/22', title: '文化巡禮、波上宮與無敵日落', region: '那霸 / 浦添',
     events: [
-      { time: '08:00 - 08:45', title: '早餐與搭單軌往首里', type: 'transport', icon: 'Coffee', mapQuery: '首里城', desc: '吃個超商早餐或「福助の玉子焼き」，搭乘單軌電車前往「首里站」，步行至首里城。', map: true },
-      { time: '08:45 - 10:15', title: '首里城', type: 'activity', icon: 'MapIcon', mapQuery: '首里城', desc: '參觀修復工程、觀景台、買紀念幣。\n💡【攻略】走無階梯「藍色路線」。動線：歡會門 ➔ 廣福門 ➔ 奉神門 ➔ 正殿 ➔ 東崎。', map: true },
+      { time: '08:00 - 08:45', title: '早餐與搭單軌往首里', type: 'transport', icon: 'Coffee', mapQuery: '首里城', desc: '吃個超商早餐或「福助の玉子焼き」或 JEF Burger，搭乘單軌電車前往「首里站」，步行至首里城。', map: true },
+      { time: '08:45 - 10:15', title: '首里城', type: 'activity', icon: 'MapIcon', mapQuery: '首里城', desc: '參觀修復工程、觀景台、買紀念幣。\n💡【攻略】走無階梯「藍色路線」。動線：歡會門 ➔ 廣福門 ➔ 奉神門(買票入內) ➔ 正殿(看修復) ➔ 東崎。', map: true },
       { time: '10:15 - 11:00', title: '步行回單軌前往牧志站', type: 'transport', icon: 'Car', mapQuery: '第一牧志公設市場', desc: '步行回單軌首里站 ➔ 搭單軌回「牧志站」 ➔ 步行進市場。' },
       { time: '11:00 - 13:00', title: '第一牧志公設市場', type: 'food', icon: 'Coffee', mapQuery: '第一牧志公設市場', desc: '【午餐】11點抵達，一樓挑海鮮，二樓代客料理。記得買步沙翁！', map: true },
       { time: '13:00 - 13:20', title: '搭計程車前往波上宮', type: 'transport', icon: 'Car', mapQuery: '波上宮', desc: '吃飽喝足，直接從市場外叫一台計程車前往波上宮（車程約 10 分鐘，省去大太陽下的體力）。' },
-      { time: '13:20 - 14:20', title: '波上宮', type: 'activity', icon: 'MapIcon', mapQuery: '波上宮', desc: '建在珊瑚礁斷崖上的琉球最高神社。買「沖繩限定」小書包御守。', map: true },
+      { time: '13:20 - 14:20', title: '波上宮', type: 'activity', icon: 'MapIcon', mapQuery: '波上宮', desc: '建在珊瑚礁斷崖上的琉球最高神社。買「沖繩限定」小書包御守、波之上海灘拍神社。', map: true },
       { time: '14:20 - 14:50', title: '搭計程車前往 PARCO', type: 'transport', icon: 'Car', mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '從波上宮直接搭計程車前往 PARCO CITY（車資約 1,500 - 2,000 日圓）。' },
-      { time: '14:50 - 19:30', title: 'PARCO CITY 大採買', type: 'shopping', icon: 'ShoppingBag', mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '先鎖定目標！進行免稅服飾、吉伊卡哇等大採買，並於 19:15 欣賞西海岸絕美夕陽。', map: true },
-      { time: '19:30 - 20:30', title: 'PARCO CITY 海景晚餐', type: 'food', icon: 'Coffee', mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '在無敵海景美食街享用：敘敘苑燒肉、三浦三崎港迴轉壽司、極味屋。逛吉伊卡哇專賣店。', map: true },
+      { time: '14:50 - 19:30', title: 'PARCO CITY 大採買', type: 'shopping', icon: 'ShoppingBag', mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '先鎖定目標！進行免稅服飾、吉伊卡哇等大採買，並於 19:15 欣賞西海岸絕美夕陽 (可能要先預約晚上的計程車)。', map: true },
+      { time: '19:30 - 20:30', title: 'PARCO CITY 海景晚餐', type: 'food', icon: 'Coffee', mapQuery: 'サンエー浦添西海岸 PARCO CITY', desc: '在無敵海景美食街享用：敘敘苑燒肉、三浦三崎港迴轉壽司、極味屋、鳥玉、Taco。逛吉伊卡哇專賣店、Akachan Honpo、3樓namco、運動用品。', map: true },
       { time: '22:00', title: '叫計程車返回飯店', type: 'transport', icon: 'Car', mapQuery: 'Almont Hotel Naha-Kenchomae', desc: '叫一台計程車直接返回飯店，車資平攤下來非常划算。記得預約明天清晨去機場的車！' }
     ]
   },
   {
     day: 6, date: '8/23', title: '賦歸', region: '那霸機場',
     events: [
-      { time: '06:30 - 07:00', title: '機場早餐', type: 'food', icon: 'Coffee', mapQuery: 'ポーたま 那覇空港国内線到着ロビー店', desc: '珀塔瑪 那霸機場 (國際線航廈 4樓 北側美食區，炸蝦豬肉蛋飯糰或苦瓜天婦羅)。七點開門。', map: true },
+      { time: '06:30 - 07:00', title: '機場早餐', type: 'food', icon: 'Coffee', mapQuery: 'ポーたま 那覇空港国内線到着ロビー店', desc: '珀塔瑪 那霸機場 (國際線航廈 4樓 北側美食區，炸蝦豬肉蛋飯糰或苦瓜天婦羅)。七點開門或超商簡單食物。', map: true },
       { time: '07:00 - 07:15', title: '搭計程車抵達那霸機場', type: 'transport', icon: 'Car', mapQuery: '那霸機場', desc: '搭乘預約好的計程車，輕鬆前往那霸機場準備登機。' },
       { time: '08:10', title: '班機起飛，滿載而歸！', type: 'activity', icon: 'PlaneTakeoff', mapQuery: '那霸機場', desc: '回程航班 08:10 起飛。帶著滿滿的美好回憶，搭機返回溫暖的家。', map: true }
     ]
@@ -127,8 +123,7 @@ const DEFAULT_ITINERARY = [
 
 const TRIP_YEAR = 2026; 
 
-// --- 🌟 完美防崩潰的全域轉場配置 ---
-// 🚨 徹底拔除 exit 退場動畫！確保舊 DOM 瞬間銷毀，完美解決 Android GPU 記憶體溢出 (OOM) 導致的白屏死鎖問題。
+// --- 🌟 完美防崩潰的輕量級轉場 (已拔除 Exit 以防止重疊) ---
 const pageTransition = {
   initial: { opacity: 0, x: 25, scale: 0.96 },
   animate: { opacity: 1, x: 0, scale: 1 },
@@ -191,7 +186,7 @@ const AmbientBackground = () => (
 );
 
 // ==========================================
-// 🌟 全域 App 進入點 (整合 Firebase 雲端讀寫)
+// 🌟 全域 App 進入點
 // ==========================================
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -204,19 +199,15 @@ export default function App() {
     setTimeout(() => setToastMsg({ text: '', visible: false }), 2500);
   };
 
-  // 1. Firebase 狀態管理
   const [itinerary, setItinerary] = useState(DEFAULT_ITINERARY);
   const [history, setHistory] = useState([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
-
-  // 2. 其它狀態
   const [exchangeRate, setExchangeRate] = useState(0.215);
   const [weather, setWeather] = useState({ temp: '--', desc: '載入中...', color: 'from-sky-500/80 to-blue-600/80' });
   const [isRateLive, setIsRateLive] = useState(false);
   const [vouchers, setVouchers] = useState([]);
   const [isVouchersLoaded, setIsVouchersLoaded] = useState(false);
 
-  // === 🚀 Firebase 雲端資料抓取 (On Mount) ===
   useEffect(() => {
     const fetchCloudData = async () => {
       try {
@@ -241,7 +232,6 @@ export default function App() {
     else setIsDataLoaded(true);
   }, [isOffline]);
 
-  // === 🎟️ Vouchers 本地存儲抓取 (維持 LocalStorage 保證隱私與離線可用) ===
   useEffect(() => {
     if (typeof window !== 'undefined' && window.storage) {
       window.storage.get('oki-vouchers-v3')
@@ -262,7 +252,6 @@ export default function App() {
     }
   }, [vouchers, isVouchersLoaded]);
 
-  // 天氣與匯率 API
   useEffect(() => {
     if (!isOffline) {
       fetch('https://api.open-meteo.com/v1/forecast?latitude=26.2124&longitude=127.6809&current_weather=true')
@@ -365,7 +354,6 @@ export default function App() {
         )}
       </AnimatePresence>
 
-      {/* 🌟 滾動沙盒隔離：外層 main 鎖死為觀景窗，完全不負責滾動，100% 根絕 Android 全白死鎖問題 */}
       <main className="w-full max-w-md relative z-10 flex-1 overflow-hidden pt-safe">
         {isOffline && (
           <div className="absolute top-0 w-full bg-rose-600/90 backdrop-blur-xl text-white text-xs font-bold py-2.5 flex items-center justify-center shadow-md z-[100]">
@@ -373,21 +361,13 @@ export default function App() {
           </div>
         )}
         
-        {/* 🌟 無阻塞式瞬間掛載 (拔除 mode="wait")，每個元件都有獨立的 overflow-y-auto 容器 */}
+        {/* 🌟 拔除外層 AnimatePresence 路由動畫！切換 Tab 時舊頁面瞬間銷毀，100% 根絕畫面重疊與記憶體崩潰 */}
         {isDataLoaded ? (
           <React.Fragment>
-            <AnimatePresence>
-              {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} openAdmin={() => setIsAdminPanelOpen(true)} />}
-            </AnimatePresence>
-            <AnimatePresence>
-              {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} rawItinerary={itinerary} />}
-            </AnimatePresence>
-            <AnimatePresence>
-              {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
-            </AnimatePresence>
-            <AnimatePresence>
-              {activeTab === 'emergency' && <EmergencyKit key="emergency" isOffline={isOffline} setIsOffline={setIsOffline} />}
-            </AnimatePresence>
+            {activeTab === 'dashboard' && <Dashboard key="dashboard" exchangeRate={exchangeRate} setExchangeRate={setExchangeRate} isRateLive={isRateLive} setIsRateLive={setIsRateLive} weather={weather} isOffline={isOffline} openAdmin={() => setIsAdminPanelOpen(true)} />}
+            {activeTab === 'itinerary' && <Itinerary key="itinerary" showToast={showToast} rawItinerary={itinerary} />}
+            {activeTab === 'vouchers' && <VoucherWallet key="vouchers" vouchers={vouchers} setVouchers={setVouchers} showToast={showToast} />}
+            {activeTab === 'emergency' && <EmergencyKit key="emergency" isOffline={isOffline} setIsOffline={setIsOffline} />}
           </React.Fragment>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-indigo-400">
@@ -415,58 +395,41 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
   const [editingEvent, setEditingEvent] = useState(null); 
   const [localItinerary, setLocalItinerary] = useState(JSON.parse(JSON.stringify(itinerary)));
 
-  // === 🚀 核心：儲存至 Firebase ===
   const handleSaveAll = async () => {
-    // 儲存至歷史紀錄 (保留最新 10 筆)，將舊的狀態推入 history
-    const newHistory = [{ id: Date.now(), timestamp: new Date().toLocaleString(), data: itinerary }, ...history].slice(0, 10);
-    
+    const newHistory = [{ id: Date.now(), timestamp: new Date().toLocaleString(), data: localItinerary }, ...history].slice(0, 10);
     try {
       showToast('雲端同步中...');
       const docRef = doc(db, "oki-trip", "main-data");
       await setDoc(docRef, { itinerary: localItinerary, history: newHistory });
-      
       setHistory(newHistory);
       setItinerary(localItinerary);
       showToast('💾 雲端儲存成功，網頁已更新！');
       onClose();
     } catch (e) {
-      console.error(e);
       showToast('⚠️ 同步失敗，請檢查網路連線');
     }
   };
 
-  // 🌟 完美修復的時光機回檔
   const handleRestore = async (historyData) => {
-    // 將目前的狀態存入歷史紀錄，標記為回檔前備份
-    const newHistory = [{ 
-      id: Date.now(), 
-      timestamp: new Date().toLocaleString() + ' (回檔前備份)', 
-      data: localItinerary 
-    }, ...history].slice(0, 10);
-    
+    const backupHistory = [{ id: Date.now(), timestamp: new Date().toLocaleString() + ' (回檔前備份)', data: localItinerary }, ...history].slice(0, 10);
     try {
       showToast('套用回檔並同步雲端中...');
       const docRef = doc(db, "oki-trip", "main-data");
-      await setDoc(docRef, { itinerary: historyData, history: newHistory });
-      
-      setHistory(newHistory);
+      await setDoc(docRef, { itinerary: historyData, history: backupHistory });
+      setHistory(backupHistory);
       setLocalItinerary(JSON.parse(JSON.stringify(historyData)));
       setItinerary(historyData);
       showToast('🔄 回檔成功！已自動覆寫雲端。');
       onClose();
     } catch (e) {
-      console.error(e);
       showToast('⚠️ 回檔失敗，請檢查網路連線');
     }
   };
 
   const handleEventSave = (dayIdx, eventIdx, newData) => {
     const newItin = [...localItinerary];
-    if (eventIdx === -1) {
-      newItin[dayIdx].events.push(newData); 
-    } else {
-      newItin[dayIdx].events[eventIdx] = newData; 
-    }
+    if (eventIdx === -1) newItin[dayIdx].events.push(newData); 
+    else newItin[dayIdx].events[eventIdx] = newData; 
     setLocalItinerary(newItin);
     setEditingEvent(null);
   };
@@ -481,7 +444,7 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
     <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 200 }}
       className="fixed inset-0 z-[100] bg-[#E8EEF5] flex flex-col max-w-md mx-auto w-full shadow-2xl"
     >
-      <div className="bg-white/90 backdrop-blur-md pt-safe pb-4 px-5 border-b border-white shadow-sm flex items-center justify-between z-10">
+      <div className="bg-white/90 backdrop-blur-md pt-safe pb-4 px-5 border-b border-white shadow-sm flex items-center justify-between">
         <h2 className="text-xl font-black text-slate-800 flex items-center"><Settings size={22} className="mr-2 text-indigo-600" /> Firebase 後台</h2>
         <div className="flex space-x-2">
           <button onClick={onClose} className="px-4 py-2 bg-slate-100 rounded-full text-xs font-bold text-slate-600 active:scale-95 transition-transform">取消</button>
@@ -489,7 +452,7 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
         </div>
       </div>
 
-      <div className="flex px-5 py-3 space-x-3 bg-white/40 z-10">
+      <div className="flex px-5 py-3 space-x-3 bg-white/40">
         <button onClick={() => setActiveTab('editor')} className={`flex-1 py-2 rounded-xl text-sm font-black transition-colors ${activeTab === 'editor' ? 'bg-white shadow-sm text-indigo-700' : 'text-slate-500 hover:bg-white/50'}`}>視覺化編輯</button>
         <button onClick={() => setActiveTab('history')} className={`flex-1 py-2 rounded-xl text-sm font-black transition-colors ${activeTab === 'history' ? 'bg-white shadow-sm text-indigo-700' : 'text-slate-500 hover:bg-white/50'}`}>版本時光機</button>
       </div>
@@ -519,8 +482,6 @@ function AdminPanel({ itinerary, setItinerary, history, setHistory, onClose, sho
                 </div>
               </div>
             ))}
-            
-            {/* 🌟 將最新的程式碼載入雲端的捷徑按鈕 */}
             <button 
               onClick={() => {
                 setLocalItinerary(DEFAULT_ITINERARY);
@@ -598,7 +559,6 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
   const [jpyInput, setJpyInput] = useState('');
   const [showReturnFlight, setShowReturnFlight] = useState(false);
   
-  // 🌟 彩蛋：連點標題 5 次開啟後台
   const [clickCount, setClickCount] = useState(0);
   const handleTitleClick = () => {
     setClickCount(c => c + 1);
@@ -611,7 +571,7 @@ function Dashboard({ exchangeRate, setExchangeRate, isRateLive, setIsRateLive, w
   return (
     <motion.div
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="pb-6 relative z-10 px-5 pt-8 space-y-6">
         <div className="flex items-end justify-between px-2 mb-2">
@@ -720,13 +680,11 @@ function CountdownBanner({ nextEvent }) {
     if (!nextEvent || !nextEvent.timeObj) return;
     const timer = setInterval(() => {
       const distance = nextEvent.timeObj.getTime() - new Date().getTime();
-      
       if (distance < 0) {
         setTimeLeft('進行中或已結束');
         clearInterval(timer);
         return;
       }
-      
       const d = Math.floor(distance / (1000 * 60 * 60 * 24));
       const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -762,7 +720,6 @@ function Itinerary({ showToast, rawItinerary }) {
   const tabsPointerEvents = useTransform(scrollY, (y) => y > 30 ? 'none' : 'auto');
 
   // 🌟 防彈資料解析 (Bulletproof Parsing)
-  // 即使 Firebase 傳來不完整的舊資料（缺 icon、缺 time），也能安全解析不報錯不白屏！
   const processedItinerary = useMemo(() => {
     if (!rawItinerary || !Array.isArray(rawItinerary)) return [];
     return rawItinerary.map(dayData => {
@@ -812,7 +769,7 @@ function Itinerary({ showToast, rawItinerary }) {
       id="itinerary-scroll"
       ref={scrollRef}
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="relative">
         <div className="sticky top-0 w-full z-40 gradient-frosted shadow-[0_10px_30px_rgba(0,0,0,0.08)] border-b border-white/60">
@@ -983,7 +940,7 @@ function VoucherWallet({ vouchers, setVouchers, showToast }) {
   return (
     <motion.div
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="p-5 pt-8 space-y-6 relative z-10">
         <AnimatePresence mode="wait">
@@ -1089,7 +1046,7 @@ function EmergencyKit({ isOffline, setIsOffline }) {
   return (
     <motion.div
       className="absolute inset-0 w-full h-full overflow-y-auto scrollbar-hide pb-32"
-      initial={pageTransition.initial} animate={pageTransition.animate} exit={pageTransition.exit} transition={pageTransition.transition}
+      initial={pageTransition.initial} animate={pageTransition.animate} transition={pageTransition.transition}
     >
       <div className="p-5 pt-8 space-y-6 relative z-10">
         
